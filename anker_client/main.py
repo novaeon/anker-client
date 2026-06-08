@@ -1,6 +1,7 @@
 # anker_client/main.py
 import sys
 from PyQt6.QtWidgets import QApplication
+from anker_client.assets import get_app_icon
 from anker_client.core.session import AnkerSession
 from anker_client.ui.main_window import MainWindow
 
@@ -8,6 +9,7 @@ from anker_client.ui.main_window import MainWindow
 def main():
     app = QApplication(sys.argv)
     app.setApplicationName("AnkerClient")
+    app.setWindowIcon(get_app_icon())
 
     from anker_client.themes import get_qss
     from anker_client.settings import get_theme

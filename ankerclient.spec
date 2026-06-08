@@ -36,6 +36,7 @@ exe = EXE(
     a.datas,
     [],
     name='AnkerClient',
+    icon='anker_client/resources/icon.ico',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

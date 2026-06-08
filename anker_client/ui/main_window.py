@@ -6,7 +6,8 @@ from PyQt6.QtWidgets import (
     QLabel, QPushButton, QHBoxLayout, QApplication
 )
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QPixmap, QPainter, QIcon, QMovie
+from PyQt6.QtGui import QPixmap, QPainter, QMovie
+from anker_client.assets import get_app_icon
 from anker_client.ui.search_widget import SearchWidget
 from anker_client.ui.game_detail import GameDetailPanel
 from anker_client.ui.library_tab import LibraryTab
@@ -19,6 +20,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.session = session
         self.setWindowTitle("AnkerClient")
+        self.setWindowIcon(get_app_icon())
         self.setMinimumSize(1120, 700)
         self._wallpaper_raw: QPixmap | None = None
         self._wallpaper_scaled: QPixmap | None = None
@@ -127,10 +129,8 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------
 
     def _init_tray(self) -> None:
-        icon_path = os.path.join(os.path.dirname(__file__), "..", "resources", "icon.png")
-        if os.path.exists(icon_path):
-            icon = QIcon(icon_path)
-        else:
+        icon = get_app_icon()
+        if icon.isNull():
             icon = self.style().standardIcon(
                 self.style().StandardPixmap.SP_ComputerIcon
             )

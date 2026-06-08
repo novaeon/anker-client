@@ -1,26 +1,45 @@
-# AnkerClient
+<p align="center">
+  <img src="./anker_client/resources/icon.png" width="96" alt="AnkerClient logo">
+</p>
 
-AnkerClient is an unofficial desktop client frontend for AnkerGames.
+<h1 align="center">AnkerClient</h1>
 
-It provides a Windows desktop UI for browsing, downloading, installing, launching, and managing games from AnkerGames. Built EXEs are published through GitHub Releases and are not committed to this repository.
+<p align="center">
+  An unofficial desktop client frontend for AnkerGames.
+</p>
+
+<p align="center">
+  <a href="https://github.com/novaeon/anker-client/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/novaeon/anker-client/ci.yml?branch=main&label=ci" alt="CI status"></a>
+  <a href="https://github.com/novaeon/anker-client/releases"><img src="https://img.shields.io/github/v/release/novaeon/anker-client?label=release" alt="Latest release"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/github/license/novaeon/anker-client" alt="License"></a>
+  <img src="https://img.shields.io/badge/platform-Windows-0078d4" alt="Windows">
+</p>
+
+![AnkerClient search and game detail view](./docs/screenshot.png)
 
 ## Features
 
-- Login with saved credentials through the Windows keyring.
-- Search and browse game details.
-- Download and install games into a local library folder.
-- Detect likely game executables after extraction.
+- Search AnkerGames and inspect game details in a native Windows desktop UI.
+- Download, extract, install, and launch games from a local library folder.
+- Detect likely game executables after extraction, with fallback selection when needed.
 - Create Desktop and Start Menu shortcuts.
-- Cache local library metadata and cover images.
+- Cache local library metadata, cover art, screenshots, and descriptions.
+- Store remembered login credentials through the Windows keyring.
 - Switch between bundled themes, including Bliss XP and Vaporwave.
 
-## Requirements
+## Download
+
+Download the latest Windows build from [Releases](https://github.com/novaeon/anker-client/releases).
+
+Built EXEs are distributed through GitHub Releases only. They are not committed to this repository.
+
+## Development
+
+Requirements:
 
 - Windows
 - Python 3.12 or newer
-- 7-Zip installed and configured in the app settings
-
-## Development Setup
+- 7-Zip installed and configured in AnkerClient settings
 
 ```powershell
 python -m venv .venv
@@ -38,12 +57,16 @@ python -m pip install -e ".[build]"
 .\build.bat
 ```
 
-The Windows executable is written to `dist\AnkerClient.exe`.
+The executable is written to `dist\AnkerClient.exe`.
 
-## Releases
+## Releasing
 
 Release builds are produced by GitHub Actions when a tag matching `v*` is pushed. See [docs/releasing.md](docs/releasing.md).
 
 ## Disclaimer
 
-This project is unofficial and is not affiliated with, endorsed by, or sponsored by AnkerGames. Use it with your own account and follow the AnkerGames terms and applicable law.
+AnkerClient is unofficial and is not affiliated with, endorsed by, or sponsored by AnkerGames. Use it with your own account and follow the AnkerGames terms and applicable law.
+
+## License
+
+AnkerClient is licensed under the [MIT License](LICENSE).
