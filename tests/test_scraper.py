@@ -1,5 +1,6 @@
 # tests/test_scraper.py
 import json
+import threading
 from pathlib import Path
 from unittest.mock import MagicMock
 import requests
@@ -291,6 +292,29 @@ def test_livewire_search_returns_empty_when_no_listing_matches():
     session.get.return_value = _response(page)
 
     assert livewire_search(session, "zzzz") == []
+
+
+def test_livewire_search_stops_between_pages_when_cancelled():
+    _page_cache.clear()
+    cancelled = threading.Event()
+    first_page = _listing_html(
+        {"type": "game", "title": "Hades", "slug": "hades"},
+        next_url="https://ankergames.net/games?page=2",
+    )
+    session = MagicMock()
+
+    def get_first_page(*_args, **_kwargs):
+        cancelled.set()
+        return _response(first_page)
+
+    session.get.side_effect = get_first_page
+
+    assert livewire_search(
+        session,
+        "iron lung",
+        should_cancel=cancelled.is_set,
+    ) == []
+    assert session.get.call_count == 1
 
 
 # ---------------------------------------------------------------------------

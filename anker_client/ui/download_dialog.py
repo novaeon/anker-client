@@ -1,74 +1,88 @@
-# anker_client/ui/download_dialog.py
+from __future__ import annotations
+
 import os
+import threading
+import uuid
+
+from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import (
-    QDialog, QVBoxLayout, QLabel, QProgressBar, QPushButton, QHBoxLayout,
-    QApplication
+    QApplication,
+    QDialog,
+    QFileDialog,
+    QHBoxLayout,
+    QLabel,
+    QMessageBox,
+    QProgressBar,
+    QPushButton,
+    QVBoxLayout,
 )
-from PyQt6.QtCore import QThread, pyqtSignal
-from anker_client.core.scraper import get_download_url
-from anker_client.core.downloader import DownloadThread
-from anker_client.core.installer import (
-    install_game, find_game_exe, create_shortcut
-)
+
+from anker_client.core.downloader import DownloadTask
+from anker_client.core.installer import create_shortcut, find_game_exe, install_game
 from anker_client.core.paths import sanitize_windows_name
+from anker_client.core.scraper import get_download_url
+from anker_client.core.tasks import BackgroundTask, get_task_runner
 import anker_client.settings as settings
 
 
-class InstallWorker(QThread):
-    status = pyqtSignal(str)
-    exe_found = pyqtSignal(str, str)   # exe_path, game_dir
-    exe_needed = pyqtSignal(str)       # game_dir — need user to pick
-    error = pyqtSignal(str)
-
-    def __init__(self, archive_path: str, game_title: str):
-        super().__init__()
-        self._archive = archive_path
-        self._title = game_title
-
-    def run(self) -> None:
-        try:
-            self.status.emit("Extracting...")
-            game_dir = install_game(self._archive, self._title, settings.get_games_dir())
-
-            self.status.emit("Finding game executable...")
-            exe = find_game_exe(game_dir, self._title)
-            if exe:
-                self.exe_found.emit(exe, game_dir)
-            else:
-                self.exe_needed.emit(game_dir)
-        except Exception as e:
-            self.error.emit(str(e))
+def _resolve_download_url(
+    cancel_event: threading.Event,
+    session,
+    download_id: int,
+    csrf_token: str,
+) -> str:
+    if cancel_event.is_set():
+        return ""
+    return get_download_url(session, download_id, csrf_token)
 
 
-def _fmt_size(n: int) -> str:
-    if n == 0:
+def _install_archive(
+    cancel_event: threading.Event,
+    archive_path: str,
+    game_title: str,
+    games_dir: str,
+) -> tuple[str | None, str]:
+    if cancel_event.is_set():
+        return None, ""
+    game_dir = install_game(archive_path, game_title, games_dir)
+    return find_game_exe(game_dir, game_title), game_dir
+
+
+def _fmt_size(size: int) -> str:
+    if size == 0:
         return "? MB"
-    if n < 1024 ** 2:
-        return f"{n/1024:.0f} KB"
-    if n < 1024 ** 3:
-        return f"{n/1024**2:.1f} MB"
-    return f"{n/1024**3:.2f} GB"
+    if size < 1024**2:
+        return f"{size / 1024:.0f} KB"
+    if size < 1024**3:
+        return f"{size / 1024**2:.1f} MB"
+    return f"{size / 1024**3:.2f} GB"
 
 
-def _fmt_speed(bps: float) -> str:
-    if bps < 1024:
-        return f"{bps:.0f} B/s"
-    if bps < 1024 ** 2:
-        return f"{bps/1024:.0f} KB/s"
-    return f"{bps/1024**2:.1f} MB/s"
+def _fmt_speed(bytes_per_second: float) -> str:
+    if bytes_per_second < 1024:
+        return f"{bytes_per_second:.0f} B/s"
+    if bytes_per_second < 1024**2:
+        return f"{bytes_per_second / 1024:.0f} KB/s"
+    return f"{bytes_per_second / 1024**2:.1f} MB/s"
 
 
 class DownloadDialog(QDialog):
+    installed = pyqtSignal(str)
+
     def __init__(self, session, game_data: dict, parent=None):
         super().__init__(parent)
         self.session = session
         self.game_data = game_data
+        self.installation_succeeded = False
         self.setWindowTitle(f"Installing {game_data.get('title', '')}")
         self.setMinimumWidth(480)
         self.setModal(True)
-        self._download_thread = None
-        self._install_thread = None
-        self._archive_path = None
+        self._prepare_task: BackgroundTask | None = None
+        self._download_task: DownloadTask | None = None
+        self._install_task: BackgroundTask | None = None
+        self._archive_path: str | None = None
+        self._cancel_requested = False
+        self._finished = False
         self._build_ui()
         self._start_download()
 
@@ -76,124 +90,267 @@ class DownloadDialog(QDialog):
         layout = QVBoxLayout(self)
 
         self.phase_label = QLabel("Preparing download...")
+        self.phase_label.setWordWrap(True)
         layout.addWidget(self.phase_label)
 
         self.progress_bar = QProgressBar()
-        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setRange(0, 0)
         layout.addWidget(self.progress_bar)
 
         self.detail_label = QLabel("")
         self.detail_label.setStyleSheet("color: #94a3b8; font-size: 11px;")
         layout.addWidget(self.detail_label)
 
-        btns = QHBoxLayout()
+        buttons = QHBoxLayout()
         self.cancel_btn = QPushButton("Cancel")
         self.cancel_btn.clicked.connect(self._cancel)
-        btns.addStretch()
-        btns.addWidget(self.cancel_btn)
-        layout.addLayout(btns)
+        buttons.addStretch()
+        buttons.addWidget(self.cancel_btn)
+        layout.addLayout(buttons)
 
     def _start_download(self) -> None:
-        title = self.game_data.get("title", "game")
-        csrf = self.game_data.get("csrf_token")
-        dl_id = self.game_data.get("download_id")
-
-        self.phase_label.setText("Fetching download link...")
-        try:
-            url = get_download_url(self.session, dl_id, csrf)
-        except Exception as e:
-            self.phase_label.setText(f"Error: {e}")
-            self.cancel_btn.setText("Close")
+        csrf_token = self.game_data.get("csrf_token")
+        download_id = self.game_data.get("download_id")
+        if download_id is None or not csrf_token:
+            self._on_error("This game page did not provide a valid download link.")
             return
 
+        self.phase_label.setText("Fetching download link...")
+        task = get_task_runner().submit(
+            _resolve_download_url,
+            self.session,
+            int(download_id),
+            str(csrf_token),
+        )
+        self._prepare_task = task
+        task.signals.result.connect(self._on_download_url)
+        task.signals.error.connect(self._on_error)
+        task.signals.finished.connect(lambda task=task: self._prepare_finished(task))
+
+    def _prepare_finished(self, task: BackgroundTask) -> None:
+        if self._prepare_task is task:
+            self._prepare_task = None
+
+    def _on_download_url(self, url: str) -> None:
+        if self._cancel_requested or not url:
+            return
+        title = self.game_data.get("title", "game")
         safe_title = sanitize_windows_name(title)
-        self._archive_path = os.path.join(settings.get_games_dir(), "_temp", f"{safe_title}.zip")
-        os.makedirs(os.path.dirname(self._archive_path), exist_ok=True)
+        filename = f"{safe_title}-{uuid.uuid4().hex}.zip"
+        self._archive_path = os.path.join(
+            settings.get_games_dir(),
+            "_temp",
+            "downloads",
+            filename,
+        )
 
         self.phase_label.setText("Downloading...")
-        self._download_thread = DownloadThread(self.session, url, self._archive_path)
-        self._download_thread.progress.connect(self._on_download_progress)
-        self._download_thread.finished.connect(self._on_download_done)
-        self._download_thread.error.connect(self._on_error)
-        self._download_thread.start()
+        self.progress_bar.setRange(0, 100)
+        download = DownloadTask(self.session, url, self._archive_path)
+        self._download_task = download
+        download.signals.progress.connect(self._on_download_progress)
+        download.signals.completed.connect(self._on_download_done)
+        download.signals.cancelled.connect(self._on_download_cancelled)
+        download.signals.error.connect(self._on_error)
+        download.signals.finished.connect(
+            lambda task=download: self._download_finished(task)
+        )
+        get_task_runner().start(download)
+
+    def _download_finished(self, task: DownloadTask) -> None:
+        if self._download_task is task:
+            self._download_task = None
+        if self._cancel_requested and not self._install_task and not self._finished:
+            if self._archive_path:
+                try:
+                    os.remove(self._archive_path)
+                except OSError:
+                    pass
+            self._finished = True
+            self.reject()
 
     def _on_download_progress(self, done: int, total: int, speed: float) -> None:
-        pct = int(done / total * 100) if total else 0
-        self.progress_bar.setValue(pct)
+        if self._cancel_requested:
+            return
+        percent = int(done / total * 100) if total else 0
+        if total:
+            self.progress_bar.setRange(0, 100)
+            self.progress_bar.setValue(percent)
+        else:
+            self.progress_bar.setRange(0, 0)
+
         eta = ""
         if total and speed > 0:
-            secs = int((total - done) / speed)
-            if secs >= 3600:
-                eta = f"  —  {secs // 3600}h {(secs % 3600) // 60}m remaining"
-            elif secs >= 60:
-                eta = f"  —  {secs // 60}m {secs % 60}s remaining"
+            seconds = max(0, int((total - done) / speed))
+            if seconds >= 3600:
+                eta = (
+                    f"  —  {seconds // 3600}h "
+                    f"{(seconds % 3600) // 60}m remaining"
+                )
+            elif seconds >= 60:
+                eta = f"  —  {seconds // 60}m {seconds % 60}s remaining"
             else:
-                eta = f"  —  {secs}s remaining"
+                eta = f"  —  {seconds}s remaining"
         self.detail_label.setText(
-            f"{_fmt_size(done)} / {_fmt_size(total)}  —  {_fmt_speed(speed)}{eta}"
+            f"{_fmt_size(done)} / {_fmt_size(total)}  —  "
+            f"{_fmt_speed(speed)}{eta}"
         )
 
     def _on_download_done(self, path: str) -> None:
+        if self._cancel_requested:
+            return
         title = self.game_data.get("title", "game")
-        self.phase_label.setText("Extracting...")
-        self.progress_bar.setRange(0, 0)  # indeterminate
+        self.phase_label.setText("Extracting and installing...")
+        self.detail_label.setText("This step cannot be cancelled safely.")
+        self.progress_bar.setRange(0, 0)
+        self.cancel_btn.setEnabled(False)
 
-        self._install_thread = InstallWorker(path, title)
-        self._install_thread.status.connect(self.phase_label.setText)
-        self._install_thread.exe_found.connect(self._on_exe_found)
-        self._install_thread.exe_needed.connect(self._on_exe_needed)
-        self._install_thread.error.connect(self._on_error)
-        self._install_thread.start()
+        task = get_task_runner().submit(
+            _install_archive,
+            path,
+            title,
+            settings.get_games_dir(),
+        )
+        self._install_task = task
+        task.signals.result.connect(self._on_install_done)
+        task.signals.error.connect(self._on_error)
+        task.signals.finished.connect(lambda task=task: self._install_finished(task))
 
-    def _on_exe_found(self, exe_path: str, game_dir: str) -> None:
-        self._create_shortcuts(exe_path, game_dir)
+    def _install_finished(self, task: BackgroundTask) -> None:
+        if self._install_task is task:
+            self._install_task = None
+        if self._finished:
+            self.cancel_btn.setEnabled(True)
+
+    def _on_install_done(self, result: tuple[str | None, str]) -> None:
+        executable, game_dir = result
+        if not game_dir:
+            self._on_error("Installation was cancelled.")
+            return
+
+        self.installation_succeeded = True
+        if executable:
+            self._create_shortcuts(executable, game_dir)
+        else:
+            executable, _ = QFileDialog.getOpenFileName(
+                self,
+                "Select game executable",
+                game_dir,
+                "Executables (*.exe)",
+            )
+            if executable:
+                self._create_shortcuts(executable, game_dir)
+
+        self._finished = True
         self.phase_label.setText("Done!")
+        self.detail_label.setText("The game is ready to play.")
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(100)
+        self.cancel_btn.setEnabled(True)
         self.cancel_btn.setText("Close")
+        self.installed.emit(game_dir)
         self._send_notification()
 
-    def _on_exe_needed(self, game_dir: str) -> None:
-        from PyQt6.QtWidgets import QFileDialog
-        self.progress_bar.setRange(0, 100)
-        self.progress_bar.setValue(100)
-        exe_path, _ = QFileDialog.getOpenFileName(
-            self, "Select game executable", game_dir, "Executables (*.exe)"
-        )
-        if exe_path:
-            self._create_shortcuts(exe_path, game_dir)
-            self._send_notification()
-        self.phase_label.setText("Done!")
-        self.cancel_btn.setText("Close")
-
-    def _create_shortcuts(self, exe_path: str, game_dir: str) -> None:
+    def _create_shortcuts(self, executable: str, game_dir: str) -> None:
         title = self.game_data.get("title", "Game")
-        safe = sanitize_windows_name(title)
-
-        desktop = os.path.join(os.path.expanduser("~"), "Desktop", f"{safe}.lnk")
-        start_menu = os.path.join(
-            os.environ["APPDATA"],
-            "Microsoft", "Windows", "Start Menu", "Programs", f"{safe}.lnk"
+        safe_title = sanitize_windows_name(title)
+        desktop = os.path.join(
+            os.path.expanduser("~"),
+            "Desktop",
+            f"{safe_title}.lnk",
         )
-        create_shortcut(exe_path, desktop, game_dir)
-        create_shortcut(exe_path, start_menu, game_dir)
-        self.phase_label.setText("Shortcuts created on Desktop and Start Menu.")
+        appdata = os.environ.get("APPDATA", os.path.expanduser("~"))
+        start_menu = os.path.join(
+            appdata,
+            "Microsoft",
+            "Windows",
+            "Start Menu",
+            "Programs",
+            f"{safe_title}.lnk",
+        )
+        try:
+            create_shortcut(executable, desktop, game_dir)
+            create_shortcut(executable, start_menu, game_dir)
+        except Exception as exc:
+            QMessageBox.warning(
+                self,
+                "Shortcut Failed",
+                f"The game installed successfully, but shortcuts could not be "
+                f"created:\n\n{exc}",
+            )
 
     def _send_notification(self) -> None:
-        """Fire a tray notification via MainWindow if one exists."""
-        from anker_client.ui.main_window import MainWindow  # local import avoids circular dep
+        from anker_client.ui.main_window import MainWindow
+
         title = self.game_data.get("title", "Game")
-        for w in QApplication.topLevelWidgets():
-            if isinstance(w, MainWindow):
-                w.notify("Download complete", f"{title} is ready to play")
+        for window in QApplication.topLevelWidgets():
+            if isinstance(window, MainWindow):
+                window.notify("Download complete", f"{title} is ready to play")
                 return
 
-    def _on_error(self, msg: str) -> None:
+    def _on_download_cancelled(self) -> None:
+        self._finished = True
+        self.reject()
+
+    def _on_error(self, message: str) -> None:
+        if self._cancel_requested:
+            self.reject()
+            return
+        self._finished = True
         self.progress_bar.setRange(0, 100)
-        self.phase_label.setText(f"Error: {msg}")
+        self.progress_bar.setValue(0)
+        self.phase_label.setText("Installation failed")
+        self.detail_label.setText(message)
+        self.cancel_btn.setEnabled(True)
         self.cancel_btn.setText("Close")
 
     def _cancel(self) -> None:
-        if self._download_thread and self._download_thread.isRunning():
-            self._download_thread.cancel()
+        if self._finished:
+            self.accept() if self.installation_succeeded else self.reject()
+            return
+        if self._install_task:
+            return
+
+        self._cancel_requested = True
+        if self._prepare_task:
+            self._prepare_task.cancel()
+            self.reject()
+            return
+        if self._download_task:
+            self.phase_label.setText("Cancelling download...")
+            self.detail_label.setText("")
+            self.cancel_btn.setEnabled(False)
+            self._download_task.cancel()
+            return
         self.reject()
+
+    def request_application_close(self) -> bool:
+        """Prepare for app shutdown, refusing to interrupt file replacement."""
+
+        if self._install_task:
+            QMessageBox.information(
+                self,
+                "Installation in progress",
+                "AnkerClient is finishing the installation. Quit after this "
+                "step completes to avoid leaving the game half-installed.",
+            )
+            return False
+        if self._download_task:
+            self._cancel()
+            return False
+        if self._prepare_task:
+            self._cancel()
+        return True
+
+    def closeEvent(self, event) -> None:
+        if self._finished:
+            event.accept()
+            return
+        if self._install_task:
+            event.ignore()
+            return
+        self._cancel()
+        if self._download_task:
+            event.ignore()
+        else:
+            event.accept()

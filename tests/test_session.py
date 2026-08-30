@@ -1,5 +1,6 @@
 # tests/test_session.py
 from unittest.mock import patch, MagicMock
+import threading
 from anker_client.core.session import AnkerSession
 from anker_client.config import BASE_URL
 
@@ -43,3 +44,27 @@ def test_login_prefers_fresh_csrf_endpoint_token():
 
     assert session.login("user@example.com", "secret") is True
     assert session._session.post.call_args.kwargs["data"]["_token"] == "fresh-token"
+
+
+def test_worker_threads_receive_independent_requests_sessions():
+    session = AnkerSession()
+    session._session.cookies.set("anker", "cookie")
+    clients = []
+    barrier = threading.Barrier(3)
+
+    def capture_client():
+        client = session._thread_client()
+        clients.append(client)
+        barrier.wait()
+
+    threads = [threading.Thread(target=capture_client) for _ in range(2)]
+    for thread in threads:
+        thread.start()
+    barrier.wait()
+    for thread in threads:
+        thread.join()
+
+    assert len(clients) == 2
+    assert clients[0] is not clients[1]
+    assert all(client is not session._session for client in clients)
+    assert all(client.cookies.get("anker") == "cookie" for client in clients)

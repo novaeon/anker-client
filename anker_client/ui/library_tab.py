@@ -1,47 +1,92 @@
 # anker_client/ui/library_tab.py
 import os
+import shutil
 import subprocess
+import threading
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QScrollArea, QGridLayout,
     QPushButton, QLabel, QMessageBox, QSplitter, QMenu,
     QLineEdit, QComboBox
 )
-from PyQt6.QtCore import Qt, QTimer, QThread, pyqtSignal
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
-from PyQt6.QtCore import QUrl
 from anker_client.core.scraper import livewire_search
 from anker_client.core.installer import find_game_exe, create_shortcut
 from anker_client.core.paths import sanitize_windows_name
-from anker_client.ui.game_detail import ScreenshotGallery, GamePageWorker
+from anker_client.core.tasks import BackgroundTask, get_task_runner
+from anker_client.ui.game_detail import ScreenshotGallery, fetch_game_page
+from anker_client.ui.image_loader import get_image_loader
 import anker_client.settings as settings
-from anker_client.settings import get_library_cache, update_library_cache
+from anker_client.settings import (
+    get_library_cache,
+    update_library_cache,
+    update_library_cache_many,
+)
 
 _CARD_W = 160
 _CARD_GAP = 12
 
 
-# ---------------------------------------------------------------------------
-# Background workers
-# ---------------------------------------------------------------------------
+def _load_library_metadata(
+    cancel_event: threading.Event,
+    session,
+    games: list[tuple[str, str]],
+) -> dict[str, dict]:
+    """Resolve missing metadata sequentially in one bounded worker."""
 
-class LibraryInfoWorker(QThread):
-    """Searches ankergames for a game by name and emits the first result."""
-    found = pyqtSignal(str, dict)  # path, game_dict
-
-    def __init__(self, session, name: str, path: str):
-        super().__init__()
-        self._session = session
-        self._name = name
-        self._path = path
-
-    def run(self) -> None:
+    found: dict[str, dict] = {}
+    for name, path in games:
+        if cancel_event.is_set():
+            break
         try:
-            results = livewire_search(self._session, self._name)
-            if results:
-                self.found.emit(self._path, results[0])
+            results = livewire_search(
+                session,
+                name,
+                should_cancel=cancel_event.is_set,
+            )
         except Exception:
+            continue
+        if cancel_event.is_set() or not results:
+            continue
+        exact = next(
+            (
+                game
+                for game in results
+                if game.get("title", "").casefold() == name.casefold()
+            ),
+            results[0],
+        )
+        found[path] = exact
+    return found
+
+
+def _remove_installed_game(
+    cancel_event: threading.Event,
+    path: str,
+    name: str,
+) -> str:
+    if cancel_event.is_set():
+        return ""
+    shutil.rmtree(path)
+    safe = sanitize_windows_name(name)
+    appdata = os.environ.get("APPDATA", os.path.expanduser("~"))
+    shortcuts = (
+        os.path.join(os.path.expanduser("~"), "Desktop", f"{safe}.lnk"),
+        os.path.join(
+            appdata,
+            "Microsoft",
+            "Windows",
+            "Start Menu",
+            "Programs",
+            f"{safe}.lnk",
+        ),
+    )
+    for shortcut in shortcuts:
+        try:
+            os.remove(shortcut)
+        except FileNotFoundError:
             pass
+    return name
 
 
 # ---------------------------------------------------------------------------
@@ -56,7 +101,11 @@ class LibraryCard(QWidget):
         super().__init__(parent)
         self._name = name
         self._path = path
-        self._cover_loading = False
+        self.info: dict = {}
+        self._cover_url = ""
+        self._image_loader = get_image_loader()
+        self._image_loader.image_loaded.connect(self._on_image_loaded)
+        self._image_loader.image_failed.connect(self._on_image_failed)
         self.setFixedSize(160, 285)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self._build_ui()
@@ -97,6 +146,7 @@ class LibraryCard(QWidget):
         layout.addWidget(self._meta_lbl)
 
     def update_info(self, game: dict) -> None:
+        self.info = dict(game)
         genres = game.get("genres", [])
         if genres:
             self._genre_lbl.setText(", ".join(genres[:2]))
@@ -118,11 +168,10 @@ class LibraryCard(QWidget):
 
         cover_url = game.get("cover_url", "")
         if cover_url:
+            self._cover_url = cover_url
             self._load_cover(cover_url)
 
     def _load_cover(self, url: str) -> None:
-        if self._cover_loading:
-            return
         # Check disk cache first
         path = settings.get_cover_path(self._name)
         if os.path.exists(path):
@@ -140,32 +189,37 @@ class LibraryCard(QWidget):
                 os.remove(path)
             except OSError:
                 pass
-        # Not cached — download from network
-        self._cover_loading = True
-        self._nam = QNetworkAccessManager(self)
-        self._nam.finished.connect(self._on_cover_loaded)
-        self._nam.get(QNetworkRequest(QUrl(url)))
+        pixmap = self._image_loader.request(url)
+        if pixmap is not None:
+            self._set_cover(pixmap, persist=True)
 
-    def _on_cover_loaded(self, reply) -> None:
-        self._cover_loading = False
-        data = reply.readAll()
-        pixmap = QPixmap()
-        pixmap.loadFromData(data)
-        if not pixmap.isNull():
-            self._cover_label.setText("")
-            self._cover_label.setPixmap(
-                pixmap.scaled(152, 200,
-                              Qt.AspectRatioMode.KeepAspectRatio,
-                              Qt.TransformationMode.SmoothTransformation)
+    def _on_image_loaded(self, url: str, pixmap: QPixmap) -> None:
+        if url == self._cover_url:
+            self._set_cover(pixmap, persist=True)
+
+    def _on_image_failed(self, url: str) -> None:
+        current = self._cover_label.pixmap()
+        if url == self._cover_url and (current is None or current.isNull()):
+            self._cover_label.setText("No cover")
+
+    def _set_cover(self, pixmap: QPixmap, persist: bool = False) -> None:
+        self._cover_label.setText("")
+        self._cover_label.setPixmap(
+            pixmap.scaled(
+                152,
+                200,
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation,
             )
-            # Save to disk cache silently
+        )
+        if persist:
             try:
                 path = settings.get_cover_path(self._name)
                 os.makedirs(os.path.dirname(path), exist_ok=True)
-                pixmap.save(path, "PNG")
-            except Exception:
+                if not os.path.exists(path):
+                    pixmap.save(path, "PNG")
+            except (OSError, ValueError):
                 pass
-        reply.deleteLater()
 
     def set_selected(self, selected: bool) -> None:
         if selected:
@@ -206,7 +260,9 @@ class LibraryDetailPanel(QWidget):
         self.session = session
         self._name: str | None = None
         self._path: str | None = None
-        self._page_worker: GamePageWorker | None = None
+        self._page_task: BackgroundTask | None = None
+        self._uninstall_task: BackgroundTask | None = None
+        self._generation = 0
         self._build_ui()
 
     def _build_ui(self) -> None:
@@ -257,6 +313,10 @@ class LibraryDetailPanel(QWidget):
         layout.addLayout(actions)
 
     def load_game(self, name: str, path: str) -> None:
+        self._generation += 1
+        generation = self._generation
+        if self._page_task:
+            self._page_task.cancel()
         self._name = name
         self._path = path
 
@@ -276,26 +336,45 @@ class LibraryDetailPanel(QWidget):
         slug = cached.get("slug")
         if slug and not (cached.get("description") and cached.get("screenshots")):
             self.desc_label.setText("Loading details…")
-            self._page_worker = GamePageWorker(self.session, slug)
-            self._page_worker.loaded.connect(self._on_page_loaded)
-            self._page_worker.error.connect(lambda _: self.desc_label.setText(""))
-            self._page_worker.start()
+            task = get_task_runner().submit(fetch_game_page, self.session, slug)
+            self._page_task = task
+            task.signals.result.connect(
+                lambda data, generation=generation, name=name: self._on_page_loaded(
+                    generation, name, data
+                )
+            )
+            task.signals.error.connect(
+                lambda _message, generation=generation: self._on_page_error(
+                    generation
+                )
+            )
+            task.signals.finished.connect(
+                lambda task=task: self._page_task_finished(task)
+            )
 
-    def _on_page_loaded(self, data: dict) -> None:
-        if not self._name:
+    def _on_page_loaded(self, generation: int, name: str, data: dict) -> None:
+        if generation != self._generation or self._name != name or not data:
             return
         # Merge page data into the existing cache entry
-        cached = get_library_cache().get(self._name, {})
+        cached = dict(get_library_cache().get(name, {}))
         cached["description"] = data.get("description", "")
         cached["screenshots"] = data.get("screenshots", [])
         # Also capture file_size from the page if available
         if data.get("file_size"):
             cached["file_size"] = data["file_size"]
-        update_library_cache(self._name, cached)
+        update_library_cache(name, cached)
 
         self.desc_label.setText(cached.get("description") or "")
         self._update_meta(cached)
         self.screenshot_strip.load_screenshots(cached.get("screenshots") or [])
+
+    def _on_page_error(self, generation: int) -> None:
+        if generation == self._generation:
+            self.desc_label.setText("")
+
+    def _page_task_finished(self, task: BackgroundTask) -> None:
+        if self._page_task is task:
+            self._page_task = None
 
     def _update_meta(self, info: dict) -> None:
         genres_text = ", ".join(info.get("genres", []))
@@ -349,7 +428,7 @@ class LibraryDetailPanel(QWidget):
             QMessageBox.warning(self, "Shortcut Failed", str(e))
 
     def _uninstall(self) -> None:
-        if not self._name or not self._path:
+        if not self._name or not self._path or self._uninstall_task:
             return
         reply = QMessageBox.question(
             self, "Uninstall",
@@ -358,33 +437,33 @@ class LibraryDetailPanel(QWidget):
         )
         if reply != QMessageBox.StandardButton.Yes:
             return
-        import shutil
         path = self._path
         name = self._name
-        try:
-            shutil.rmtree(path)
-            safe = sanitize_windows_name(name)
-            desktop = os.path.join(os.path.expanduser("~"), "Desktop", f"{safe}.lnk")
-            start_menu = os.path.join(
-                os.environ["APPDATA"],
-                "Microsoft", "Windows", "Start Menu", "Programs", f"{safe}.lnk"
-            )
-            for shortcut in (desktop, start_menu):
-                if os.path.exists(shortcut):
-                    os.remove(shortcut)
-        except Exception as e:
-            QMessageBox.warning(self, "Uninstall Failed", str(e))
-            return
-        # Clear panel and trigger refresh via parent
-        self._name = None
-        self._path = None
-        self.title_label.setText("")
-        self.meta_label.setText("")
-        self.desc_label.setText("")
-        self.screenshot_strip.load_screenshots([])
         self.launch_btn.setEnabled(False)
         self.shortcut_btn.setEnabled(False)
         self.uninstall_btn.setEnabled(False)
+        self.desc_label.setText("Uninstalling…")
+        task = get_task_runner().submit(_remove_installed_game, path, name)
+        self._uninstall_task = task
+        task.signals.result.connect(self._on_uninstalled)
+        task.signals.error.connect(self._on_uninstall_error)
+        task.signals.finished.connect(
+            lambda task=task: self._uninstall_finished(task)
+        )
+
+    def _on_uninstalled(self, name: str) -> None:
+        if not name:
+            return
+        if self._name == name:
+            self._name = None
+            self._path = None
+            self.title_label.setText("")
+            self.meta_label.setText("")
+            self.desc_label.setText("")
+            self.screenshot_strip.load_screenshots([])
+            self.launch_btn.setEnabled(False)
+            self.shortcut_btn.setEnabled(False)
+            self.uninstall_btn.setEnabled(False)
         # Walk up to LibraryTab and call refresh
         parent = self.parent()
         while parent:
@@ -392,6 +471,22 @@ class LibraryDetailPanel(QWidget):
                 parent.refresh()
                 break
             parent = parent.parent()
+
+    def _on_uninstall_error(self, message: str) -> None:
+        QMessageBox.warning(self, "Uninstall Failed", message)
+        self.launch_btn.setEnabled(True)
+        self.shortcut_btn.setEnabled(True)
+        self.uninstall_btn.setEnabled(True)
+
+    def _uninstall_finished(self, task: BackgroundTask) -> None:
+        if self._uninstall_task is task:
+            self._uninstall_task = None
+
+    def shutdown(self) -> None:
+        if self._page_task:
+            self._page_task.cancel()
+        if self._uninstall_task:
+            self._uninstall_task.cancel()
 
 
 # ---------------------------------------------------------------------------
@@ -404,9 +499,16 @@ class LibraryTab(QWidget):
         self.session = session
         self._all_cards: list[LibraryCard] = []
         self._cards: list[LibraryCard] = []
-        self._workers: list[LibraryInfoWorker] = []
+        self._cards_by_path: dict[str, LibraryCard] = {}
+        self._metadata_task: BackgroundTask | None = None
+        self._pending_metadata: tuple[int, list[tuple[str, str]]] | None = None
+        self._generation = 0
         self._selected_card: LibraryCard | None = None
         self._current_cols = 0
+        self._reflow_timer = QTimer(self)
+        self._reflow_timer.setSingleShot(True)
+        self._reflow_timer.setInterval(50)
+        self._reflow_timer.timeout.connect(self._reflow_grid)
         self._build_ui()
         self.refresh()
 
@@ -476,7 +578,7 @@ class LibraryTab(QWidget):
     def resizeEvent(self, event) -> None:
         super().resizeEvent(event)
         if self._cards:
-            QTimer.singleShot(0, self._reflow_grid)
+            self._reflow_timer.start()
 
     def _reflow_grid(self) -> None:
         vp_w = self.grid_scroll.viewport().width()
@@ -487,6 +589,7 @@ class LibraryTab(QWidget):
         while self.grid_layout.count():
             self.grid_layout.takeAt(0)
         for i, card in enumerate(self._cards):
+            card.show()
             self.grid_layout.addWidget(card, i // cols, i % cols)
 
     # ------------------------------------------------------------------
@@ -505,24 +608,23 @@ class LibraryTab(QWidget):
             filtered.sort(key=lambda c: c._name.lower(), reverse=True)
         elif sort_idx == 2:  # Size largest first
             def _size_key(c: LibraryCard) -> float:
-                from anker_client.settings import get_library_cache
-                cached = get_library_cache().get(c._name, {})
                 try:
-                    return -float(cached.get("size_gb") or 0)
+                    return -float(c.info.get("size_gb") or 0)
                 except (ValueError, TypeError):
                     return 0.0
             filtered.sort(key=_size_key)
         else:               # Newest first
             def _year_key(c: LibraryCard) -> int:
-                from anker_client.settings import get_library_cache
-                cached = get_library_cache().get(c._name, {})
-                date = cached.get("release_date") or ""
+                date = c.info.get("release_date") or ""
                 try:
                     return -int(date[:4])
                 except (ValueError, TypeError):
                     return 0
             filtered.sort(key=_year_key)
 
+        visible = set(filtered)
+        for card in self._all_cards:
+            card.setVisible(card in visible)
         self._cards = filtered
         self._current_cols = 0
         self._reflow_grid()
@@ -532,9 +634,11 @@ class LibraryTab(QWidget):
     # ------------------------------------------------------------------
 
     def refresh(self) -> None:
-        for w in self._workers:
-            w.quit()
-        self._workers = []
+        self._generation += 1
+        generation = self._generation
+        self._pending_metadata = None
+        if self._metadata_task:
+            self._metadata_task.cancel()
 
         while self.grid_layout.count():
             self.grid_layout.takeAt(0)
@@ -542,6 +646,7 @@ class LibraryTab(QWidget):
             card.deleteLater()
         self._all_cards = []
         self._cards = []
+        self._cards_by_path = {}
         self._selected_card = None
         self._current_cols = 0
 
@@ -550,37 +655,97 @@ class LibraryTab(QWidget):
             self._status_label.setText("Installed Games")
             return
 
-        for name in sorted(os.listdir(games_dir)):
-            path = os.path.join(games_dir, name)
-            if os.path.isdir(path) and name != "_temp":
-                card = LibraryCard(name, path)
-                card.clicked.connect(self._on_card_clicked)
-                card.action_requested.connect(self._on_card_action)
-                self._all_cards.append(card)
+        cache = get_library_cache()
+        missing_metadata: list[tuple[str, str]] = []
+        try:
+            entries = sorted(
+                (
+                    entry
+                    for entry in os.scandir(games_dir)
+                    if entry.is_dir(follow_symlinks=False) and entry.name != "_temp"
+                ),
+                key=lambda entry: entry.name.casefold(),
+            )
+        except OSError as exc:
+            self._status_label.setText(f"Could not read library: {exc}")
+            return
 
-                cached = get_library_cache().get(name)
-                if cached:
-                    card.update_info(cached)
-                elif self.session and self.session.is_logged_in:
-                    worker = LibraryInfoWorker(self.session, name, path)
-                    worker.found.connect(self._on_info_found)
-                    worker.finished.connect(
-                        lambda w=worker: self._workers.remove(w) if w in self._workers else None
-                    )
-                    self._workers.append(worker)
-                    worker.start()
+        for entry in entries:
+            name = entry.name
+            path = entry.path
+            card = LibraryCard(name, path)
+            card.clicked.connect(self._on_card_clicked)
+            card.action_requested.connect(self._on_card_action)
+            self._all_cards.append(card)
+            self._cards_by_path[path] = card
+
+            cached = cache.get(name)
+            if cached:
+                card.update_info(cached)
+            elif self.session:
+                missing_metadata.append((name, path))
 
         count = len(self._all_cards)
         self._status_label.setText(f"{count} game{'s' if count != 1 else ''} installed")
+        self._reflow_timer.start(0)
         QTimer.singleShot(0, self._apply_filter_sort)
 
-    def _on_info_found(self, path: str, game: dict) -> None:
-        name = os.path.basename(path)
-        update_library_cache(name, game)
-        for card in self._all_cards:
-            if card._path == path:
+        if missing_metadata:
+            self._queue_metadata(generation, missing_metadata)
+
+    def _queue_metadata(
+        self,
+        generation: int,
+        games: list[tuple[str, str]],
+    ) -> None:
+        self._pending_metadata = (generation, games)
+        if self._metadata_task is None:
+            self._start_pending_metadata()
+
+    def _start_pending_metadata(self) -> None:
+        if not self._pending_metadata:
+            return
+        generation, games = self._pending_metadata
+        self._pending_metadata = None
+        task = get_task_runner().submit(
+            _load_library_metadata,
+            self.session,
+            games,
+        )
+        self._metadata_task = task
+        task.signals.result.connect(
+            lambda found, generation=generation: self._on_metadata_loaded(
+                generation, found
+            )
+        )
+        task.signals.finished.connect(
+            lambda task=task: self._metadata_finished(task)
+        )
+
+    def _on_metadata_loaded(
+        self,
+        generation: int,
+        found: dict[str, dict],
+    ) -> None:
+        if generation != self._generation or not found:
+            return
+        updates = {
+            os.path.basename(path): game
+            for path, game in found.items()
+        }
+        update_library_cache_many(updates)
+        for path, game in found.items():
+            card = self._cards_by_path.get(path)
+            if card:
                 card.update_info(game)
-                break
+        self._apply_filter_sort()
+
+    def _metadata_finished(self, task: BackgroundTask) -> None:
+        if self._metadata_task is not task:
+            return
+        self._metadata_task = None
+        if self._pending_metadata:
+            self._start_pending_metadata()
 
     def _on_card_action(self, action: str, name: str, path: str) -> None:
         if action == "launch":
@@ -599,3 +764,9 @@ class LibraryTab(QWidget):
                 self._selected_card = card
                 break
         self.detail_panel.load_game(name, path)
+
+    def shutdown(self) -> None:
+        self._pending_metadata = None
+        if self._metadata_task:
+            self._metadata_task.cancel()
+        self.detail_panel.shutdown()

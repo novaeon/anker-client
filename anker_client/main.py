@@ -3,6 +3,7 @@ import sys
 from PyQt6.QtWidgets import QApplication
 from anker_client.assets import get_app_icon
 from anker_client.core.session import AnkerSession
+from anker_client.core.tasks import get_task_runner
 from anker_client.ui.main_window import MainWindow
 
 
@@ -17,17 +18,14 @@ def main():
 
     session = AnkerSession()
 
-    # Auto-login from keyring
-    email, password = session.load_credentials()
-    if email and password:
-        try:
-            session.login(email, password)
-        except Exception:
-            pass  # MainWindow will show login dialog when is_logged_in is False
-
     window = MainWindow(session)
     window.show()
-    sys.exit(app.exec())
+    exit_code = app.exec()
+    # Cooperative cancellation prevents background callbacks from touching Qt
+    # objects during interpreter teardown.
+    get_task_runner().shutdown(5_000)
+    session.close()
+    sys.exit(exit_code)
 
 
 if __name__ == "__main__":

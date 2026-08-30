@@ -1,8 +1,8 @@
 # anker_client/ui/game_card.py
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QMenu
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtCore import Qt, pyqtSignal, QUrl
-from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
+from PyQt6.QtCore import Qt, pyqtSignal
+from anker_client.ui.image_loader import get_image_loader
 
 
 class GameCard(QWidget):
@@ -11,6 +11,10 @@ class GameCard(QWidget):
     def __init__(self, game: dict, parent=None):
         super().__init__(parent)
         self.game = game
+        self._cover_url = game.get("cover_url", "")
+        self._image_loader = get_image_loader()
+        self._image_loader.image_loaded.connect(self._on_image_loaded)
+        self._image_loader.image_failed.connect(self._on_image_failed)
         self.setFixedSize(160, 285)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self._build_ui()
@@ -56,24 +60,31 @@ class GameCard(QWidget):
             meta_lbl.setStyleSheet("font-size: 10px; color: #475569;")
             layout.addWidget(meta_lbl)
 
-        if self.game.get("cover_url"):
-            self._load_cover(self.game["cover_url"])
+        if self._cover_url:
+            self._load_cover(self._cover_url)
 
     def _load_cover(self, url: str) -> None:
-        self._nam = QNetworkAccessManager(self)
-        self._nam.finished.connect(self._on_cover_loaded)
-        self._nam.get(QNetworkRequest(QUrl(url)))
+        pixmap = self._image_loader.request(url)
+        if pixmap is not None:
+            self._set_cover(pixmap)
 
-    def _on_cover_loaded(self, reply) -> None:
-        data = reply.readAll()
-        pixmap = QPixmap()
-        pixmap.loadFromData(data)
-        if not pixmap.isNull():
-            self.cover_label.setPixmap(
-                pixmap.scaled(152, 200, Qt.AspectRatioMode.KeepAspectRatio,
-                              Qt.TransformationMode.SmoothTransformation)
+    def _on_image_loaded(self, url: str, pixmap: QPixmap) -> None:
+        if url == self._cover_url:
+            self._set_cover(pixmap)
+
+    def _on_image_failed(self, url: str) -> None:
+        if url == self._cover_url:
+            self.cover_label.setText("No cover")
+
+    def _set_cover(self, pixmap: QPixmap) -> None:
+        self.cover_label.setPixmap(
+            pixmap.scaled(
+                152,
+                200,
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation,
             )
-        reply.deleteLater()
+        )
 
     def mousePressEvent(self, event) -> None:
         if event.button() == Qt.MouseButton.LeftButton:
