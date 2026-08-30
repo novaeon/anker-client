@@ -3,6 +3,7 @@ import json
 import threading
 import time
 from collections.abc import Callable
+from dataclasses import dataclass
 from html import unescape as html_unescape
 from urllib.parse import unquote, urljoin, urlparse
 from bs4 import BeautifulSoup
@@ -15,6 +16,14 @@ _SEARCH_MAX_RESULTS = 60
 _page_cache: dict[str, tuple[float, list[dict], str | None]] = {}
 _page_cache_lock = threading.RLock()
 _page_fetch_lock = threading.Lock()
+
+
+@dataclass(frozen=True, slots=True)
+class DownloadRequest:
+    """A resolved archive URL plus the page that authorized the download."""
+
+    url: str
+    referer: str
 
 
 def _copy_games(games: list[dict]) -> list[dict]:
@@ -352,7 +361,7 @@ def _request_treasure_box_url(session, download_id: int, csrf_token: str) -> str
     treasure_box_url = data.get("download_url") or data.get("url")
     if not treasure_box_url:
         raise RuntimeError(f"No download URL in response: {data}")
-    return treasure_box_url
+    return urljoin(BASE_URL, str(treasure_box_url))
 
 
 def _normalize_download_url(value: str) -> str:
@@ -377,7 +386,11 @@ def _normalize_download_url(value: str) -> str:
     return url
 
 
-def get_download_url(session, download_id: int, csrf_token: str) -> str:
+def get_download_request(
+    session,
+    download_id: int,
+    csrf_token: str,
+) -> DownloadRequest:
     """
     Resolve the real CDN download URL for a game.
 
@@ -411,4 +424,13 @@ def get_download_url(session, download_id: int, csrf_token: str) -> str:
             "The site may have changed its download page structure."
         )
 
-    return _normalize_download_url(m.group(1))
+    return DownloadRequest(
+        url=_normalize_download_url(m.group(1)),
+        referer=treasure_box_url,
+    )
+
+
+def get_download_url(session, download_id: int, csrf_token: str) -> str:
+    """Compatibility wrapper returning only the resolved archive URL."""
+
+    return get_download_request(session, download_id, csrf_token).url
