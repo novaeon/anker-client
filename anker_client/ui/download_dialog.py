@@ -20,20 +20,20 @@ from PyQt6.QtWidgets import (
 from anker_client.core.downloader import DownloadTask
 from anker_client.core.installer import create_shortcut, find_game_exe, install_game
 from anker_client.core.paths import sanitize_windows_name
-from anker_client.core.scraper import get_download_url
+from anker_client.core.scraper import DownloadRequest, get_download_request
 from anker_client.core.tasks import BackgroundTask, get_task_runner
 import anker_client.settings as settings
 
 
-def _resolve_download_url(
+def _resolve_download_request(
     cancel_event: threading.Event,
     session,
     download_id: int,
     csrf_token: str,
-) -> str:
+) -> DownloadRequest | None:
     if cancel_event.is_set():
-        return ""
-    return get_download_url(session, download_id, csrf_token)
+        return None
+    return get_download_request(session, download_id, csrf_token)
 
 
 def _install_archive(
@@ -117,13 +117,13 @@ class DownloadDialog(QDialog):
 
         self.phase_label.setText("Fetching download link...")
         task = get_task_runner().submit(
-            _resolve_download_url,
+            _resolve_download_request,
             self.session,
             int(download_id),
             str(csrf_token),
         )
         self._prepare_task = task
-        task.signals.result.connect(self._on_download_url)
+        task.signals.result.connect(self._on_download_request)
         task.signals.error.connect(self._on_error)
         task.signals.finished.connect(lambda task=task: self._prepare_finished(task))
 
@@ -131,8 +131,8 @@ class DownloadDialog(QDialog):
         if self._prepare_task is task:
             self._prepare_task = None
 
-    def _on_download_url(self, url: str) -> None:
-        if self._cancel_requested or not url:
+    def _on_download_request(self, request: DownloadRequest | None) -> None:
+        if self._cancel_requested or request is None:
             return
         title = self.game_data.get("title", "game")
         safe_title = sanitize_windows_name(title)
@@ -146,7 +146,19 @@ class DownloadDialog(QDialog):
 
         self.phase_label.setText("Downloading...")
         self.progress_bar.setRange(0, 100)
-        download = DownloadTask(self.session, url, self._archive_path)
+        download = DownloadTask(
+            self.session,
+            request.url,
+            self._archive_path,
+            headers={
+                "Accept": (
+                    "application/octet-stream, application/zip, "
+                    "application/x-7z-compressed, application/vnd.rar, */*;q=0.5"
+                ),
+                "Accept-Encoding": "identity",
+                "Referer": request.referer,
+            },
+        )
         self._download_task = download
         download.signals.progress.connect(self._on_download_progress)
         download.signals.completed.connect(self._on_download_done)

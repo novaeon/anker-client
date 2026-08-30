@@ -9,6 +9,7 @@ from anker_client.core.scraper import (
     parse_game_page,
     parse_livewire_results,
     livewire_search,
+    get_download_request,
     get_download_url,
     _page_cache,
 )
@@ -362,12 +363,13 @@ def test_get_download_url_unescapes_json_slashes():
     """
     session.get.return_value.raise_for_status = MagicMock()
 
-    url = get_download_url(session, 308, "csrf-tok")
+    request = get_download_request(session, 308, "csrf-tok")
 
-    assert url == (
+    assert request.url == (
         "https://ankergames.net/download-file/"
         "a5bd0bf3d3705aa3c5604eeec13dd14812dfc6c56ee62c1a"
     )
+    assert request.referer == "https://ankergames.net/download/token123/hash456"
 
 
 def test_get_download_url_raises_on_missing_cdn_url():
