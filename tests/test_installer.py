@@ -1,6 +1,7 @@
 # tests/test_installer.py
 import os
 import tempfile
+import shutil
 from pathlib import Path
 import anker_client.core.installer as installer
 from anker_client.core.installer import find_game_exe
@@ -97,3 +98,38 @@ def test_install_game_sanitizes_temp_and_final_dirs(tmp_path, monkeypatch):
     assert Path(result) == expected
     assert expected.is_dir()
     assert not (tmp_path / "_temp").exists()
+
+
+def test_install_game_restores_existing_install_when_final_move_fails(
+    tmp_path,
+    monkeypatch,
+):
+    existing = tmp_path / "Hades"
+    existing.mkdir()
+    (existing / "save.dat").write_text("old install", encoding="utf-8")
+
+    def fake_extract(_archive_path: str, destination: str) -> None:
+        payload = Path(destination) / "Payload"
+        payload.mkdir(parents=True)
+        (payload / "Hades.exe").write_bytes(b"new")
+
+    real_move = shutil.move
+
+    def fail_final_move(source, destination, *args, **kwargs):
+        if Path(destination) == existing:
+            raise OSError("simulated move failure")
+        return real_move(source, destination, *args, **kwargs)
+
+    monkeypatch.setattr(installer, "extract_archive", fake_extract)
+    monkeypatch.setattr(shutil, "move", fail_final_move)
+
+    import pytest
+    with pytest.raises(OSError, match="simulated move failure"):
+        installer.install_game(
+            str(tmp_path / "download.zip"),
+            "Hades",
+            str(tmp_path),
+        )
+
+    assert (existing / "save.dat").read_text(encoding="utf-8") == "old install"
+    assert list(tmp_path.glob("Hades.anker-backup-*")) == []

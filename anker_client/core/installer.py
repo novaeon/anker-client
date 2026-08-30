@@ -1,6 +1,8 @@
 # anker_client/core/installer.py
 import os
 import subprocess
+import tempfile
+import uuid
 from pathlib import Path
 from anker_client.config import UTILITY_EXE_PATTERNS
 from anker_client.core.paths import sanitize_windows_name
@@ -114,15 +116,53 @@ def install_game(archive_path: str, game_title: str, games_dir: str) -> str:
     from anker_client.config import JUNK_FILENAMES, JUNK_EXTENSIONS
 
     safe_title = sanitize_windows_name(game_title)
-    temp_dir = os.path.join(games_dir, "_temp", safe_title)
+    temp_root = os.path.join(games_dir, "_temp")
+    os.makedirs(temp_root, exist_ok=True)
+    temp_dir = tempfile.mkdtemp(prefix=f"{safe_title}-", dir=temp_root)
     game_dest = os.path.join(games_dir, safe_title)
+    backup_dest = f"{game_dest}.anker-backup-{uuid.uuid4().hex}"
+    moved_existing = False
 
-    extract_archive(archive_path, temp_dir)
-    game_root = find_game_root(temp_dir, JUNK_FILENAMES, JUNK_EXTENSIONS)
+    try:
+        extract_archive(archive_path, temp_dir)
+        game_root = find_game_root(temp_dir, JUNK_FILENAMES, JUNK_EXTENSIONS)
 
-    if os.path.exists(game_dest):
-        shutil.rmtree(game_dest)
-    shutil.move(game_root, game_dest)
-    shutil.rmtree(os.path.join(games_dir, "_temp"), ignore_errors=True)
+        # Preserve an existing installation until extraction has succeeded.
+        # If the final move fails, restoring the backup leaves the user's game
+        # usable instead of half-deleted.
+        if os.path.exists(game_dest):
+            os.replace(game_dest, backup_dest)
+            moved_existing = True
 
-    return game_dest
+        try:
+            shutil.move(game_root, game_dest)
+        except Exception:
+            if moved_existing:
+                if os.path.exists(game_dest):
+                    shutil.rmtree(game_dest, ignore_errors=True)
+                if not os.path.exists(game_dest):
+                    os.replace(backup_dest, game_dest)
+            raise
+
+        if moved_existing:
+            shutil.rmtree(backup_dest, ignore_errors=True)
+        return game_dest
+    finally:
+        shutil.rmtree(temp_dir, ignore_errors=True)
+        try:
+            os.remove(archive_path)
+        except OSError:
+            pass
+        downloads_dir = os.path.dirname(archive_path)
+        if (
+            os.path.basename(downloads_dir) == "downloads"
+            and os.path.dirname(downloads_dir) == temp_root
+        ):
+            try:
+                os.rmdir(downloads_dir)
+            except OSError:
+                pass
+        try:
+            os.rmdir(temp_root)  # Remove it only when no other job uses it.
+        except OSError:
+            pass

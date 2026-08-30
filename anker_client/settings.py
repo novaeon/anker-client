@@ -1,6 +1,9 @@
 # anker_client/settings.py
 import os
+import copy
 import json
+import tempfile
+import threading
 from anker_client.config import GAMES_DIR as _DEFAULT_GAMES_DIR, SEVEN_ZIP as _DEFAULT_SEVEN_ZIP
 from anker_client.core.paths import sanitize_cover_name
 
@@ -11,6 +14,44 @@ _COVERS_DIR = os.path.join(_SETTINGS_DIR, "covers")
 
 _cache: dict | None = None
 _library_cache: dict | None = None
+_write_lock = threading.RLock()
+
+
+def _atomic_write_json(path: str, data: dict) -> None:
+    """Replace a JSON file atomically so a crash cannot truncate the cache."""
+
+    directory = os.path.dirname(path) or "."
+    os.makedirs(directory, exist_ok=True)
+    temp_path = ""
+    try:
+        with tempfile.NamedTemporaryFile(
+            "w",
+            encoding="utf-8",
+            dir=directory,
+            prefix=".anker-",
+            suffix=".tmp",
+            delete=False,
+        ) as handle:
+            temp_path = handle.name
+            json.dump(data, handle, indent=2)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temp_path, path)
+    finally:
+        if temp_path and os.path.exists(temp_path):
+            try:
+                os.remove(temp_path)
+            except OSError:
+                pass
+
+
+def _save_settings(updates: dict) -> None:
+    global _cache
+    with _write_lock:
+        data = _load().copy()
+        data.update(updates)
+        _atomic_write_json(_SETTINGS_FILE, data)
+        _cache = data
 
 
 def _load() -> dict:
@@ -38,13 +79,7 @@ def get_theme() -> str:
 
 
 def save_theme(key: str) -> None:
-    global _cache
-    data = _load().copy()
-    data["theme"] = key
-    os.makedirs(_SETTINGS_DIR, exist_ok=True)
-    with open(_SETTINGS_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
-    _cache = data
+    _save_settings({"theme": key})
 
 
 def get_library_cache() -> dict:
@@ -61,11 +96,19 @@ def get_library_cache() -> dict:
 
 def update_library_cache(name: str, data: dict) -> None:
     """Persist one game's metadata into the library cache."""
-    cache = get_library_cache()
-    cache[name] = data
-    os.makedirs(_SETTINGS_DIR, exist_ok=True)
-    with open(_LIBRARY_CACHE_FILE, "w", encoding="utf-8") as f:
-        json.dump(cache, f, indent=2)
+    update_library_cache_many({name: data})
+
+
+def update_library_cache_many(entries: dict[str, dict]) -> None:
+    """Persist multiple metadata updates with a single atomic disk write."""
+
+    if not entries:
+        return
+    with _write_lock:
+        cache = get_library_cache()
+        for name, data in entries.items():
+            cache[name] = copy.deepcopy(data)
+        _atomic_write_json(_LIBRARY_CACHE_FILE, cache)
 
 
 def get_cover_path(name: str) -> str:
@@ -83,21 +126,11 @@ def get_close_behavior() -> str | None:
 
 def save_close_behavior(key: str) -> None:
     """Persist the close behaviour setting ('tray' or 'quit')."""
-    global _cache
-    data = _load().copy()
-    data["close_behavior"] = key
-    os.makedirs(_SETTINGS_DIR, exist_ok=True)
-    with open(_SETTINGS_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
-    _cache = data
+    _save_settings({"close_behavior": key})
 
 
 def save(games_dir: str, seven_zip: str) -> None:
-    global _cache
-    data = _load().copy()
-    data["games_dir"] = games_dir
-    data["seven_zip"] = seven_zip
-    os.makedirs(_SETTINGS_DIR, exist_ok=True)
-    with open(_SETTINGS_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
-    _cache = data
+    _save_settings({
+        "games_dir": games_dir,
+        "seven_zip": seven_zip,
+    })

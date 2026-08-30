@@ -1,31 +1,35 @@
-# anker_client/ui/search_widget.py
+from __future__ import annotations
+
+import threading
+
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLineEdit,
-    QScrollArea, QGridLayout, QLabel
+    QGridLayout,
+    QLabel,
+    QLineEdit,
+    QScrollArea,
+    QVBoxLayout,
+    QWidget,
 )
-from PyQt6.QtCore import Qt, QTimer, QThread, pyqtSignal
+
 from anker_client.core.scraper import livewire_search
+from anker_client.core.tasks import BackgroundTask, get_task_runner
 from anker_client.ui.game_card import GameCard
 
 _CARD_W = 160
 _CARD_GAP = 12
 
 
-class SearchWorker(QThread):
-    results_ready = pyqtSignal(list)
-    error = pyqtSignal(str)
-
-    def __init__(self, session, query: str):
-        super().__init__()
-        self._session = session
-        self._query = query
-
-    def run(self) -> None:
-        try:
-            results = livewire_search(self._session, self._query)
-            self.results_ready.emit(results)
-        except Exception as e:
-            self.error.emit(str(e))
+def _search_games(
+    cancel_event: threading.Event,
+    session,
+    query: str,
+) -> list[dict]:
+    return livewire_search(
+        session,
+        query,
+        should_cancel=cancel_event.is_set,
+    )
 
 
 class SearchWidget(QWidget):
@@ -34,10 +38,17 @@ class SearchWidget(QWidget):
     def __init__(self, session, parent=None):
         super().__init__(parent)
         self.session = session
-        self._search_worker = None
-        self._debounce_timer = QTimer()
+        self._active_task: BackgroundTask | None = None
+        self._pending_search: tuple[int, str] | None = None
+        self._generation = 0
+        self._debounce_timer = QTimer(self)
         self._debounce_timer.setSingleShot(True)
+        self._debounce_timer.setInterval(400)
         self._debounce_timer.timeout.connect(self._do_search)
+        self._reflow_timer = QTimer(self)
+        self._reflow_timer.setSingleShot(True)
+        self._reflow_timer.setInterval(50)
+        self._reflow_timer.timeout.connect(self._reflow_grid)
         self._cards: list[GameCard] = []
         self._current_cols = 0
         self._build_ui()
@@ -60,55 +71,99 @@ class SearchWidget(QWidget):
 
         self.grid_scroll = QScrollArea()
         self.grid_scroll.setWidgetResizable(True)
-        self.grid_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.grid_scroll.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
         self.grid_container = QWidget()
         self.grid_layout = QGridLayout(self.grid_container)
         self.grid_layout.setSpacing(_CARD_GAP)
         self.grid_layout.setContentsMargins(4, 4, 4, 4)
-        self.grid_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+        self.grid_layout.setAlignment(
+            Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft
+        )
         self.grid_scroll.setWidget(self.grid_container)
         layout.addWidget(self.grid_scroll)
-
-    # ------------------------------------------------------------------
-    # Resize: reflow grid columns to fill available width
-    # ------------------------------------------------------------------
 
     def resizeEvent(self, event) -> None:
         super().resizeEvent(event)
         if self._cards:
-            QTimer.singleShot(0, self._reflow_grid)
+            self._reflow_timer.start()
 
     def _reflow_grid(self) -> None:
-        vp_w = self.grid_scroll.viewport().width()
-        cols = max(1, (vp_w - 8 + _CARD_GAP) // (_CARD_W + _CARD_GAP))
-        if cols == self._current_cols:
+        viewport_width = self.grid_scroll.viewport().width()
+        columns = max(
+            1,
+            (viewport_width - 8 + _CARD_GAP) // (_CARD_W + _CARD_GAP),
+        )
+        if columns == self._current_cols:
             return
-        self._current_cols = cols
+        self._current_cols = columns
         while self.grid_layout.count():
             self.grid_layout.takeAt(0)
-        for i, card in enumerate(self._cards):
-            self.grid_layout.addWidget(card, i // cols, i % cols)
-
-    # ------------------------------------------------------------------
-    # Search
-    # ------------------------------------------------------------------
+        for index, card in enumerate(self._cards):
+            self.grid_layout.addWidget(
+                card,
+                index // columns,
+                index % columns,
+            )
 
     def _on_text_changed(self, text: str) -> None:
-        if len(text) >= 2:
-            self._debounce_timer.start(500)
-        else:
-            self._debounce_timer.stop()
+        if len(text.strip()) >= 2:
+            self._debounce_timer.start()
+            return
+
+        self._debounce_timer.stop()
+        self._generation += 1
+        self._pending_search = None
+        if self._active_task:
+            self._active_task.cancel()
+        self._clear_results()
+        self.status_label.setText("Type at least 2 characters to search...")
 
     def _do_search(self) -> None:
+        self._debounce_timer.stop()
         query = self.search_input.text().strip()
         if not query:
             return
+
+        self._generation += 1
+        self._pending_search = (self._generation, query)
+        if self._active_task:
+            # Keep at most one expensive paginated search in flight.  The old
+            # task stops between pages and the latest query starts immediately
+            # afterwards.
+            self._active_task.cancel()
+            self.status_label.setText("Updating search...")
+            return
+        self._start_pending_search()
+
+    def _start_pending_search(self) -> None:
+        if not self._pending_search:
+            return
+        generation, query = self._pending_search
+        self._pending_search = None
         self.status_label.setText("Searching...")
-        self._clear_results()
-        self._search_worker = SearchWorker(self.session, query)
-        self._search_worker.results_ready.connect(self._show_results)
-        self._search_worker.error.connect(self._show_error)
-        self._search_worker.start()
+
+        task = get_task_runner().submit(_search_games, self.session, query)
+        self._active_task = task
+        task.signals.result.connect(
+            lambda results, generation=generation: self._show_results(
+                generation, results
+            )
+        )
+        task.signals.error.connect(
+            lambda message, generation=generation: self._show_error(
+                generation, message
+            )
+        )
+        task.signals.finished.connect(lambda task=task: self._task_finished(task))
+
+    def _task_finished(self, task: BackgroundTask) -> None:
+        if self._active_task is not task:
+            return
+        self._active_task = None
+        if self._pending_search:
+            self._start_pending_search()
 
     def _clear_results(self) -> None:
         while self.grid_layout.count():
@@ -118,17 +173,28 @@ class SearchWidget(QWidget):
         self._cards = []
         self._current_cols = 0
 
-    def _show_results(self, results: list) -> None:
+    def _show_results(self, generation: int, results: list[dict]) -> None:
+        if generation != self._generation:
+            return
         self._clear_results()
         if not results:
             self.status_label.setText("No results found.")
             return
-        self.status_label.setText(f"{len(results)} result(s)")
+        self.status_label.setText(
+            f"{len(results)} result{'s' if len(results) != 1 else ''}"
+        )
         for game in results:
             card = GameCard(game)
             card.clicked.connect(self.game_selected)
             self._cards.append(card)
-        QTimer.singleShot(0, self._reflow_grid)
+        self._reflow_timer.start(0)
 
-    def _show_error(self, msg: str) -> None:
-        self.status_label.setText(f"Error: {msg}")
+    def _show_error(self, generation: int, message: str) -> None:
+        if generation == self._generation:
+            self.status_label.setText(f"Search failed: {message}")
+
+    def shutdown(self) -> None:
+        self._debounce_timer.stop()
+        self._pending_search = None
+        if self._active_task:
+            self._active_task.cancel()

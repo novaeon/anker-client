@@ -1,6 +1,8 @@
 import re
 import json
+import threading
 import time
+from collections.abc import Callable
 from html import unescape as html_unescape
 from urllib.parse import unquote, urljoin, urlparse
 from bs4 import BeautifulSoup
@@ -11,6 +13,20 @@ _SEARCH_CACHE_TTL_SECONDS = 10 * 60
 _SEARCH_MAX_PAGES = 80
 _SEARCH_MAX_RESULTS = 60
 _page_cache: dict[str, tuple[float, list[dict], str | None]] = {}
+_page_cache_lock = threading.RLock()
+_page_fetch_lock = threading.Lock()
+
+
+def _copy_games(games: list[dict]) -> list[dict]:
+    """Keep callers from mutating shared cached search entries."""
+
+    return [
+        {
+            **game,
+            "genres": list(game.get("genres", [])),
+        }
+        for game in games
+    ]
 
 
 def parse_search_results(html: str) -> list[dict]:
@@ -208,16 +224,34 @@ def _extract_next_page_url(html: str, current_url: str) -> str | None:
 
 def _fetch_listing_page(session, url: str) -> tuple[list[dict], str | None]:
     now = time.time()
-    cached = _page_cache.get(url)
-    if cached and now - cached[0] < _SEARCH_CACHE_TTL_SECONDS:
-        return cached[1], cached[2]
+    with _page_cache_lock:
+        cached = _page_cache.get(url)
+        if cached and now - cached[0] < _SEARCH_CACHE_TTL_SECONDS:
+            return _copy_games(cached[1]), cached[2]
 
-    resp = session.get(url, timeout=20)
-    resp.raise_for_status()
-    results = parse_search_results(resp.text)
-    next_url = _extract_next_page_url(resp.text, url)
-    _page_cache[url] = (now, results, next_url)
-    return results, next_url
+    # Search and library refreshes can overlap.  Serialize a cache miss and
+    # re-check once inside the lock so they never download the same page twice.
+    with _page_fetch_lock:
+        now = time.time()
+        with _page_cache_lock:
+            cached = _page_cache.get(url)
+            if cached and now - cached[0] < _SEARCH_CACHE_TTL_SECONDS:
+                return _copy_games(cached[1]), cached[2]
+
+        resp = session.get(url, timeout=(5, 15))
+        resp.raise_for_status()
+        results = parse_search_results(resp.text)
+        next_url = _extract_next_page_url(resp.text, url)
+
+        with _page_cache_lock:
+            _page_cache[url] = (now, results, next_url)
+            # Pagination is currently bounded, but pruning also protects us if
+            # the site starts emitting unstable query-string URLs.
+            if len(_page_cache) > 128:
+                oldest = sorted(_page_cache, key=lambda key: _page_cache[key][0])
+                for key in oldest[:-128]:
+                    _page_cache.pop(key, None)
+        return _copy_games(results), next_url
 
 
 def _matches_query(game: dict, query: str) -> bool:
@@ -235,8 +269,13 @@ def _matches_query(game: dict, query: str) -> bool:
     return all(term in haystack for term in terms)
 
 
-def search_games(session, query: str, max_results: int = _SEARCH_MAX_RESULTS,
-                 max_pages: int = _SEARCH_MAX_PAGES) -> list[dict]:
+def search_games(
+    session,
+    query: str,
+    max_results: int = _SEARCH_MAX_RESULTS,
+    max_pages: int = _SEARCH_MAX_PAGES,
+    should_cancel: Callable[[], bool] | None = None,
+) -> list[dict]:
     """
     Search current AnkerGames listing pages by following pagination and
     filtering the embedded listing JSON locally.
@@ -246,7 +285,11 @@ def search_games(session, query: str, max_results: int = _SEARCH_MAX_RESULTS,
     url = f"{BASE_URL}/games"
 
     for _ in range(max_pages):
+        if should_cancel and should_cancel():
+            return []
         page_results, next_url = _fetch_listing_page(session, url)
+        if should_cancel and should_cancel():
+            return []
         for game in page_results:
             slug = game.get("slug")
             if not slug or slug in seen_slugs:
@@ -264,7 +307,11 @@ def search_games(session, query: str, max_results: int = _SEARCH_MAX_RESULTS,
     return matches
 
 
-def livewire_search(session, query: str) -> list[dict]:
+def livewire_search(
+    session,
+    query: str,
+    should_cancel: Callable[[], bool] | None = None,
+) -> list[dict]:
     """
     Compatibility wrapper for the UI's existing search worker.
 
@@ -272,7 +319,7 @@ def livewire_search(session, query: str) -> list[dict]:
     so search now follows the public paginated listing pages and filters the
     embedded listing JSON locally.
     """
-    return search_games(session, query)
+    return search_games(session, query, should_cancel=should_cancel)
 
 
 def _fetch_fresh_csrf_token(session) -> str:
@@ -306,6 +353,28 @@ def _request_treasure_box_url(session, download_id: int, csrf_token: str) -> str
     if not treasure_box_url:
         raise RuntimeError(f"No download URL in response: {data}")
     return treasure_box_url
+
+
+def _normalize_download_url(value: str) -> str:
+    """Decode the percent-, HTML-, and JavaScript-escaped download URL."""
+
+    url = html_unescape(unquote(value.strip()))
+    # Alpine state is sometimes emitted from JSON without unescaping its
+    # forward slashes, producing ``https:\/\/host\/path`` as literal text.
+    url = url.replace(r"\/", "/")
+    url = re.sub(r"\\u002[fF]", "/", url)
+
+    if url.startswith("/"):
+        url = urljoin(BASE_URL, url)
+
+    parsed = urlparse(url)
+    try:
+        hostname = parsed.hostname
+    except ValueError:
+        hostname = None
+    if parsed.scheme.lower() not in {"http", "https"} or not hostname:
+        raise RuntimeError(f"Unexpected download URL extracted: {url[:120]}")
+    return url
 
 
 def get_download_url(session, download_id: int, csrf_token: str) -> str:
@@ -342,8 +411,4 @@ def get_download_url(session, download_id: int, csrf_token: str) -> str:
             "The site may have changed its download page structure."
         )
 
-    real_url = unquote(m.group(1))
-    if not real_url.startswith("http"):
-        raise RuntimeError(f"Unexpected download URL extracted: {real_url[:120]}")
-
-    return real_url
+    return _normalize_download_url(m.group(1))
