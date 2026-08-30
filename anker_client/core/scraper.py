@@ -355,6 +355,28 @@ def _request_treasure_box_url(session, download_id: int, csrf_token: str) -> str
     return treasure_box_url
 
 
+def _normalize_download_url(value: str) -> str:
+    """Decode the percent-, HTML-, and JavaScript-escaped download URL."""
+
+    url = html_unescape(unquote(value.strip()))
+    # Alpine state is sometimes emitted from JSON without unescaping its
+    # forward slashes, producing ``https:\/\/host\/path`` as literal text.
+    url = url.replace(r"\/", "/")
+    url = re.sub(r"\\u002[fF]", "/", url)
+
+    if url.startswith("/"):
+        url = urljoin(BASE_URL, url)
+
+    parsed = urlparse(url)
+    try:
+        hostname = parsed.hostname
+    except ValueError:
+        hostname = None
+    if parsed.scheme.lower() not in {"http", "https"} or not hostname:
+        raise RuntimeError(f"Unexpected download URL extracted: {url[:120]}")
+    return url
+
+
 def get_download_url(session, download_id: int, csrf_token: str) -> str:
     """
     Resolve the real CDN download URL for a game.
@@ -389,8 +411,4 @@ def get_download_url(session, download_id: int, csrf_token: str) -> str:
             "The site may have changed its download page structure."
         )
 
-    real_url = unquote(m.group(1))
-    if not real_url.startswith("http"):
-        raise RuntimeError(f"Unexpected download URL extracted: {real_url[:120]}")
-
-    return real_url
+    return _normalize_download_url(m.group(1))

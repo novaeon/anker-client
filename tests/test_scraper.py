@@ -350,6 +350,26 @@ def test_get_download_url_resolves_cdn_url():
     assert "ankergames.net/download/token123" in call_url
 
 
+def test_get_download_url_unescapes_json_slashes():
+    """Literal JSON slash escapes must not reach the HTTP downloader."""
+    session = MagicMock()
+    session.post.return_value.json.return_value = {
+        "download_url": "https://ankergames.net/download/token123/hash456"
+    }
+    session.post.return_value.raise_for_status = MagicMock()
+    session.get.return_value.text = r"""
+        <div x-data="downloadPage('https:\/\/ankergames.net\/download-file\/a5bd0bf3d3705aa3c5604eeec13dd14812dfc6c56ee62c1a', null)"></div>
+    """
+    session.get.return_value.raise_for_status = MagicMock()
+
+    url = get_download_url(session, 308, "csrf-tok")
+
+    assert url == (
+        "https://ankergames.net/download-file/"
+        "a5bd0bf3d3705aa3c5604eeec13dd14812dfc6c56ee62c1a"
+    )
+
+
 def test_get_download_url_raises_on_missing_cdn_url():
     """get_download_url raises RuntimeError if no downloadPage() found in page."""
     session = MagicMock()
