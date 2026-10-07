@@ -485,16 +485,20 @@ def test_context_menu_actions(qtbot: Any, ui: UI) -> None:
         actions = {a.text(): a for a in menu.actions() if a.text()}
         return actions
 
+    # A card menu deletes itself once it hides, so open a fresh one for every action
+    # (exactly like a user would) instead of reusing actions across event processing.
     actions = menu_for("cyberpunk-2077")
     assert list(actions) == ["View details", "Add to wishlist", "Open on website", "Copy link"]
     actions["Add to wishlist"].trigger()
     qtbot.waitUntil(lambda: ui.ctx.catalog.is_wishlisted("cyberpunk-2077"), timeout=3000)
     qtbot.waitUntil(lambda: grid.grid_model.item("cyberpunk-2077").favorite, timeout=3000)
+
+    actions = menu_for("cyberpunk-2077")
+    assert "Remove from wishlist" in actions
     actions["View details"].trigger()
     assert ui.nav.named("show_game")[-1].args[0] == "cyberpunk-2077"
 
     actions = menu_for("cyberpunk-2077")
-    assert "Remove from wishlist" in actions
     actions["Copy link"].trigger()
     assert QApplication.clipboard().text() == "https://ankergames.net/game/cyberpunk-2077"
     assert ui.nav.named("toast")[-1].args == ("Link copied to clipboard", "success")
