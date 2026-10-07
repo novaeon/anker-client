@@ -1,26 +1,36 @@
 # Releasing
 
-AnkerClient releases are built by GitHub Actions from tags.
+Releases are built by GitHub Actions when a `v*` tag is pushed.
 
-## Create a Release
+1. Update `anker_client/__init__.py` (`__version__`) and `CHANGELOG.md`.
+2. Make sure `main` is green in CI.
+3. Tag and push:
 
-1. Make sure `main` is clean and CI is passing.
-2. Create and push a version tag:
+   ```powershell
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
 
-```powershell
-git tag v0.1.0
-git push origin v0.1.0
-```
+4. The release workflow checks that the tag matches `__version__`, runs lint and
+   tests, builds the one-folder app with PyInstaller, packs a portable zip,
+   builds the Inno Setup installer and publishes both to a GitHub Release.
 
-3. The release workflow runs tests, builds `dist\AnkerClient.exe` with PyInstaller, and creates a GitHub Release for the tag.
-4. Confirm the release contains `AnkerClient.exe`.
+The app checks the latest GitHub release on startup (when enabled in Settings)
+and tells users about new versions.
 
-## Local Build Check
+## Local build
 
 ```powershell
 python -m pip install -e ".[dev,build]"
-python -m pytest -q
-.\build.bat
+./scripts/build.ps1            # add -SkipTests / -SkipInstaller as needed
 ```
 
-The EXE should be substantially larger than the PyInstaller bootloader. A tiny output usually means the build failed or packaged incompletely.
+Outputs:
+
+* `dist/AnkerClient/AnkerClient.exe` — the app (one-folder build; QtWebEngine
+  needs its helper process and resources next to the exe)
+* `dist/AnkerClient-<version>-portable.zip`
+* `dist/AnkerClient-<version>-setup.exe` — when Inno Setup 6 is installed
+
+Smoke test: `dist\AnkerClient\AnkerClient.exe --version`, then start it with a
+throwaway profile (`$env:ANKERCLIENT_HOME = "$env:TEMP\ankertest"`).
