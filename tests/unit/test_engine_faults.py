@@ -84,7 +84,9 @@ def test_work_stealing_keeps_all_connections_busy_near_the_end(tmp_path: Path, h
 
     reports: list = []
     started = time.perf_counter()
-    make_downloader(http, min_segment_size=512 * KIB, min_steal_size=32 * KIB).download(
+    # Sample progress every 50 ms: with the default 250 ms a short four-connection phase can
+    # fall between two reports on a fast runner (0 would report per chunk, which is far slower).
+    make_downloader(http, min_segment_size=512 * KIB, min_steal_size=32 * KIB, progress_interval=0.05).download(
         server.link(), str(dest), token=CancelToken(), on_progress=reports.append
     )
     elapsed = time.perf_counter() - started

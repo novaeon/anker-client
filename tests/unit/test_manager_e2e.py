@@ -188,8 +188,11 @@ def test_pause_resume_and_restart_continue_the_real_partial_file(world: _World) 
     assert os.path.isfile(paused.archive_path + ".part")
 
     first.resume(job.id)
-    wait_until(lambda: (j := first.get(job.id)) and j.state is JobState.DOWNLOADING
-               and j.bytes_done > paused.bytes_done, 15, "(resumed)")
+    # Wait for the resumed *request*, not just progress: on resume the job first adopts the
+    # on-disk progress (the paused transfer may have flushed one more block after the pause
+    # was reported), which would satisfy a bytes_done check before anything was re-requested.
+    wait_until(lambda: any(s > 0 for s in world.server.ranged_starts()), 15, "(resumed request)")
+    wait_until(lambda: (j := first.get(job.id)) and j.state is JobState.DOWNLOADING, 15, "(resumed)")
     first.shutdown(timeout=10)  # app exit mid-download
     stored = first.get(job.id)
     assert stored.state is JobState.PAUSED and stored.bytes_done < total
