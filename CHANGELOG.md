@@ -4,7 +4,7 @@ All notable changes to AnkerClient are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
-## [1.0.0] — unreleased
+## [1.0.0] — 2026-10-07
 
 A ground-up rewrite. Settings, remembered sign-in and games installed by 0.x
 are picked up automatically.
