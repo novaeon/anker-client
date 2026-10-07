@@ -445,11 +445,17 @@ def test_installs_are_serialised(h: Harness) -> None:
         archive.write_bytes(b"PK")
         archives.append(manager.import_archive(str(archive), slug=name, title=name.upper()))
     wait_until(lambda: h.installer.call_count == 1)
-    threading.Event().wait(0.1)
-    assert h.installer.call_count == 1
-    waiting = [manager.get(j.id) for j in archives[1:]]
-    assert all(j.state is JobState.EXTRACTING for j in waiting)
-    assert any("another installation" in j.status_text for j in waiting)
+
+    def others_waiting() -> bool:
+        # Wait for the state instead of sleeping a fixed time: on a busy machine the other
+        # workers can take a while to reach the install lock.
+        waiting = [manager.get(j.id) for j in archives[1:]]
+        return all(j.state is JobState.EXTRACTING for j in waiting) and any(
+            "another installation" in j.status_text for j in waiting
+        )
+
+    wait_until(others_waiting)
+    assert h.installer.call_count == 1  # the others are blocked behind the running install
     h.installer.gate.set()
     for job in archives:
         h.wait_state(manager, job.id, JobState.COMPLETED)
