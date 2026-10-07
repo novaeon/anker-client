@@ -1,0 +1,672 @@
+<!DOCTYPE html><html lang="en" dir="ltr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="csrf-token" content="lq9DmhqYzwTxh0bF9DL3nO9BVMItHFPLZP98SS6V"><meta name="robots" content="noindex, follow"><title>Sign In - AnkerGames</title><meta itemprop="name" content="Sign In - AnkerGames"><meta itemprop="description" content="Sign in to your AnkerGames account."><meta property="og:type" content="website"><meta property="og:title" content="Sign In - AnkerGames"><meta property="og:description" content="Sign in to your AnkerGames account."><meta property="og:url" content="https://ankergames.net/login"><meta name="twitter:card" content="summary_large_image"><link rel="canonical" href="https://ankergames.net/login"/><script>
+        if (localStorage.getItem('dark-mode') == 'true' || !('dark-mode' in localStorage)) {
+            document.querySelector('html').classList.add('dark');
+        } else {
+            document.querySelector('html').classList.remove('dark');
+        }
+    </script><link rel="icon" href="https://ankergames.net/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="192x192" href="https://ankergames.net/favicon/android-chrome-192x192.png"><link rel="icon" type="image/png" sizes="96x96" href="https://ankergames.net/favicon/favicon-96x96.png"><link rel="icon" type="image/png" sizes="32x32" href="https://ankergames.net/favicon/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="https://ankergames.net/favicon/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="https://ankergames.net/favicon/apple-touch-icon.png"><link rel="mask-icon" href="https://ankergames.net/favicon/safari-pinned-tab.svg" color="#000000"><link rel="manifest" href="https://ankergames.net/site.webmanifest"><link rel="dns-prefetch" href="//cdn.onesignal.com"><link rel="dns-prefetch" href="//www.youtube.com"><link rel="dns-prefetch" href="//i.ytimg.com"><link rel="stylesheet" href="https://ankergames.net/build/assets/app-BgaMvNjh.css" data-navigate-track="reload" /><style>
+:root {
+    --color-gray-50: oklch(0.984 0.003 248.234);
+    --color-gray-100: oklch(0.968 0.007 248.084);
+    --color-gray-200: oklch(0.929 0.013 255.561);
+    --color-gray-300: oklch(0.869 0.02 252.937);
+    --color-gray-400: oklch(0.711 0.035 256.803);
+    --color-gray-500: oklch(0.554 0.041 257.428);
+    --color-gray-600: oklch(0.446 0.037 257.291);
+    --color-gray-700: oklch(0.372 0.039 257.296);
+    --color-gray-800: oklch(0.279 0.037 260.038);
+    --color-gray-900: oklch(0.208 0.04 265.759);
+    --color-gray-950: oklch(0.129 0.041 264.7);
+
+    --color-primary-50: oklch(0.896 0.0215 262.887);
+    --color-primary-100: oklch(0.866 0.03225 262.887);
+    --color-primary-200: oklch(0.816 0.05375 262.887);
+    --color-primary-300: oklch(0.746 0.09675 262.887);
+    --color-primary-400: oklch(0.626 0.16125 262.887);
+    --color-primary-500: oklch(0.546 0.215 262.887);
+    --color-primary-600: oklch(0.476 0.2365 262.887);
+    --color-primary-700: oklch(0.416 0.215 262.887);
+    --color-primary-800: oklch(0.356 0.1763 262.887);
+    --color-primary-900: oklch(0.296 0.1419 262.887);
+    --color-primary-950: oklch(0.166 0.086 262.887);
+
+    /* Light mode theme color (default) */
+    --theme-color: oklch(0.546 0.215 262.887);
+    --primary-color: #2563eb;
+}
+
+:root.dark {
+    --color-gray-50: oklch(0.984 0.003 248.234);
+    --color-gray-100: oklch(0.968 0.007 248.084);
+    --color-gray-200: oklch(0.929 0.013 255.561);
+    --color-gray-300: oklch(0.869 0.02 252.937);
+    --color-gray-400: oklch(0.711 0.035 256.803);
+    --color-gray-500: oklch(0.554 0.041 257.428);
+    --color-gray-600: oklch(0.446 0.037 257.291);
+    --color-gray-700: oklch(0.372 0.039 257.296);
+    --color-gray-800: oklch(0.279 0.037 260.038);
+    --color-gray-900: oklch(0.208 0.04 265.759);
+    --color-gray-950: oklch(0.129 0.041 264.7);
+
+    --color-primary-50: oklch(0.98 0.0132 232.828);
+    --color-primary-100: oklch(0.95 0.02 232.828);
+    --color-primary-200: oklch(0.9 0.04 232.828);
+    --color-primary-300: oklch(0.83 0.08 232.828);
+    --color-primary-400: oklch(0.71 0.15 232.828);
+    --color-primary-500: oklch(0.693 0.132 232.828);
+    --color-primary-600: oklch(0.623 0.1452 232.828);
+    --color-primary-700: oklch(0.563 0.132 232.828);
+    --color-primary-800: oklch(0.503 0.10824 232.828);
+    --color-primary-900: oklch(0.443 0.08712 232.828);
+    --color-primary-950: oklch(0.313 0.0528 232.828);
+
+    /* Dark mode theme color */
+    --theme-color: oklch(0.693 0.132 232.828);
+    --primary-color: #2aa9e0;
+}
+
+</style><!-- Livewire Styles --><style >[wire\:loading][wire\:loading], [wire\:loading\.delay][wire\:loading\.delay], [wire\:loading\.list-item][wire\:loading\.list-item], [wire\:loading\.inline-block][wire\:loading\.inline-block], [wire\:loading\.inline][wire\:loading\.inline], [wire\:loading\.block][wire\:loading\.block], [wire\:loading\.flex][wire\:loading\.flex], [wire\:loading\.table][wire\:loading\.table], [wire\:loading\.grid][wire\:loading\.grid], [wire\:loading\.inline-flex][wire\:loading\.inline-flex] {display: none;}[wire\:loading\.delay\.none][wire\:loading\.delay\.none], [wire\:loading\.delay\.shortest][wire\:loading\.delay\.shortest], [wire\:loading\.delay\.shorter][wire\:loading\.delay\.shorter], [wire\:loading\.delay\.short][wire\:loading\.delay\.short], [wire\:loading\.delay\.default][wire\:loading\.delay\.default], [wire\:loading\.delay\.long][wire\:loading\.delay\.long], [wire\:loading\.delay\.longer][wire\:loading\.delay\.longer], [wire\:loading\.delay\.longest][wire\:loading\.delay\.longest] {display: none;}[wire\:offline][wire\:offline] {display: none;}[wire\:dirty]:not(textarea):not(input):not(select) {display: none;}:root {--livewire-progress-bar-color: #2299dd;}[x-cloak] {display: none !important;}[wire\:cloak] {display: none !important;}dialog#livewire-error::backdrop {background-color: rgba(0, 0, 0, .6);}</style></head><body
+    class="min-h-screen dark:bg-gray-950 flex flex-col relative"
+    x-data="{ searchOpen: false,loading:false,'sidebarToggle': false, compactToggle: localStorage.getItem('compactToggle') === 'true', cookiePolicy: localStorage.getItem('cookiePolicy')}" x-bind:class="{ 'false': cookiePolicy }" x-init="$watch('cookiePolicy', val => localStorage.setItem('cookiePolicy', val))"><header
+    class="w-full z-40 bg-gray-50 dark:bg-gray-950 xl:dark:bg-gray-950/80 backdrop-blur-lg sticky top-0  mb-4 custom-container   bg-transparent! dark:bg-transparent! "><div class=""><div class="flex items-center relative h-16"><div class="shrink-0 lg:ml-0 flex items-center gap-x-5"><a class="" href="https://ankergames.net" aria-label="AnkerGames Homepage"><div class="hidden dark:block "><img
+                    src="https://ankergames.net/static/img/dark-logo-1770061259.svg"
+                    alt="AnkerGames - Home"
+                    class="w-full h-7"
+                                            width="451"
+                        height="74"
+                                        loading="lazy"
+                    fetchpriority="low"
+                ></div><div class="dark:hidden "><img
+                    src="https://ankergames.net/static/img/logo-1766947266.svg"
+                    alt="AnkerGames - Home"
+                    class="w-full h-7"
+                                            width="460"
+                        height="67"
+                                        loading="lazy"
+                    fetchpriority="low"
+                ></div></a></div><nav class="hidden lg:flex flex-1 items-center min-w-0 lg:mx-4 2xl:mx-6" x-data="priorityNav"><ul x-ref="navList" class="flex items-center text-sm gap-1 flex-nowrap w-full"><li class="relative shrink-0 " data-nav-item
+                                    ><a href="/games-list"
+                                            class="px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:border-[var(--primary-color)] dark:hover:text-gray-100 hover:rounded-lg flex items-center relative after:absolute after:inset-0 after:rounded-lg hover:after:w-full after:transition hover:after:bg-gray-400/10"
+                                            ><span class="tracking-tight font-medium whitespace-nowrap flex items-center gap-1">
+                                                All Games
+                                                                                            </span></a></li><li class="relative shrink-0 " data-nav-item
+                                    ><a href="https://ankergames.net/top-games"
+                                            class="px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:border-[var(--primary-color)] dark:hover:text-gray-100 hover:rounded-lg flex items-center relative after:absolute after:inset-0 after:rounded-lg hover:after:w-full after:transition hover:after:bg-gray-400/10"
+                                            ><span class="tracking-tight font-medium whitespace-nowrap flex items-center gap-1">
+                                                Top
+                                                                                            </span></a></li><li class="relative shrink-0 " data-nav-item
+                                    ><a href="https://ankergames.net/trending"
+                                            class="px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:border-[var(--primary-color)] dark:hover:text-gray-100 hover:rounded-lg flex items-center relative after:absolute after:inset-0 after:rounded-lg hover:after:w-full after:transition hover:after:bg-gray-400/10"
+                                            ><span class="tracking-tight font-medium whitespace-nowrap flex items-center gap-1">
+                                                Trending
+                                                                                            </span></a></li><li class="relative shrink-0 " data-nav-item
+    x-data="{
+        ...navDropdown(),
+        showAll: false,
+        loaded: false,
+        loading: false,
+        featured: [],
+        all: [],
+        query: '',
+        async loadGenres() {
+            if (this.loaded || this.loading) return;
+            this.loading = true;
+            try {
+                const res = await fetch('https://ankergames.net/api/genres/nav');
+                const data = await res.json();
+                this.featured = data.featured || [];
+                this.all = data.all || [];
+                this.loaded = true;
+            } catch (e) {
+                console.error('Failed to load genres', e);
+            } finally {
+                this.loading = false;
+            }
+        },
+        // Search runs entirely on the JSON already fetched for the menu (every
+        // genre, not just the featured ones), so it answers on each keystroke
+        // with no request. Prefix matches rank first; the hit is highlighted.
+        fold(s) { return String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); },
+        get results() {
+            const q = this.fold(this.query.trim());
+            if (!q) return [];
+            const pool = (this.all.length ? this.all : this.featured).flatMap(g => g.genres);
+            const out = [];
+            for (const genre of pool) {
+                const at = this.fold(genre.title).indexOf(q);
+                if (at === -1) continue;
+                out.push({ ...genre, at, pre: genre.title.slice(0, at), hit: genre.title.slice(at, at + q.length), post: genre.title.slice(at + q.length) });
+            }
+            return out.sort((a, b) => a.at - b.at || a.title.localeCompare(b.title)).slice(0, 36);
+        },
+        openFirstResult() {
+            const first = this.results[0];
+            if (first) window.location.assign(first.url);
+        },
+        resetSearch() { this.query = ''; }
+    }"
+    @mouseenter="enter(); loadGenres()"
+    @mouseleave="leave(); showAll = false"><button type="button"
+        class="pl-3 pr-2 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:rounded-lg flex items-center gap-1 relative after:absolute after:inset-0 after:rounded-lg hover:after:w-full after:transition hover:after:bg-gray-400/10 focus:outline-none"
+        @click="open = !open; loadGenres(); if (open) $nextTick(() => $refs.search?.focus())"
+        aria-haspopup="true"
+        :aria-expanded="open.toString()"><span class="tracking-tight font-medium whitespace-nowrap flex items-center gap-1">
+            Genre
+            <span class="inline-flex h-1.5 w-1.5 rounded-full bg-[var(--primary-color)] animate-pulse"></span></span></button><div x-cloak x-show="open" x-ref="panel"
+        x-transition:enter="transition ease-out duration-150"
+        x-transition:enter-start="opacity-0 -translate-y-2"
+        x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100 translate-y-0"
+        x-transition:leave-end="opacity-0 -translate-y-2"
+        class="absolute left-1/2 top-full mt-3 rounded-2xl border border-slate-200/80 dark:border-slate-800/70 bg-white/95 dark:bg-slate-950/95 shadow-2xl shadow-slate-900/10 backdrop-blur"
+        style="min-width: 240px; width: min(85vw, 640px); transform: translateX(calc(-50% + var(--dd-shift, 0px)));"
+        @click.outside="close(); showAll = false; resetSearch()" @keydown.escape.window="close(); showAll = false; resetSearch()"><div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-t-2xl flex items-start justify-between gap-4"><div><p class="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--primary-color)]">Featured Genres</p><p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    Curated categories from your navigation menu.
+                </p></div><button type="button"
+                        class="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-full bg-[var(--primary-color)]/10 text-[var(--primary-color)] hover:bg-[var(--primary-color)]/20 transition"
+                        @click.stop="showAll = !showAll"
+                        :aria-pressed="showAll.toString()"><span x-show="!showAll" x-cloak class="inline-flex items-center gap-2"><span>Show All</span><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-3.5 h-3.5 -rotate-90"><use href="https://ankergames.net/static/sprite/sprite.svg#arrow-down" xlink:href="https://ankergames.net/static/sprite/sprite.svg#arrow-down"></use></svg></span><span x-show="showAll" x-cloak class="inline-flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-3.5 h-3.5 rotate-90"><use href="https://ankergames.net/static/sprite/sprite.svg#arrow-down" xlink:href="https://ankergames.net/static/sprite/sprite.svg#arrow-down"></use></svg><span>Back to Featured</span></span></button></div><div class="px-5 pt-4 bg-white dark:bg-slate-900"><label class="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-slate-400 transition-colors focus-within:border-[var(--primary-color)] focus-within:bg-white focus-within:ring-2 focus-within:ring-[var(--primary-color)]/20 dark:border-slate-700 dark:bg-slate-950/60 dark:focus-within:bg-slate-950"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="h-4 w-4 shrink-0" stroke-width="2"><use href="https://ankergames.net/static/sprite/sprite.svg#search" xlink:href="https://ankergames.net/static/sprite/sprite.svg#search"></use></svg><input type="search" size="1" x-ref="search" x-model="query" enterkeyhint="go" autocomplete="off" spellcheck="false"
+                       placeholder="Search genres" aria-label="Search genres"
+                       @focus="loadGenres()"
+                       @keydown.enter.prevent="openFirstResult()"
+                       @keydown.escape.stop="query ? resetSearch() : (close(), showAll = false)"
+                       class="w-full border-0 bg-transparent p-0 text-sm text-slate-900 placeholder-slate-400 focus:ring-0 dark:text-white"><button type="button" x-show="query" x-cloak @click="resetSearch(); $refs.search.focus()"
+                        class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-white"
+                        aria-label="Clear search"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="h-3.5 w-3.5" stroke-width="2"><use href="https://ankergames.net/static/sprite/sprite.svg#close" xlink:href="https://ankergames.net/static/sprite/sprite.svg#close"></use></svg></button></label></div><div class="p-5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 rounded-b-2xl"><div x-show="loaded && query" x-cloak role="region" aria-live="polite"><template x-if="results.length"><ul class="grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-2 md:grid-cols-3" role="list"><template x-for="genre in results" :key="genre.slug"><li><a :href="genre.url"
+                                   class="flex items-center justify-between rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-[var(--primary-color)]/10 hover:text-[var(--primary-color)] dark:text-slate-300 dark:hover:bg-[var(--primary-color)]/20 dark:hover:text-white transition"><span class="line-clamp-1"><span x-text="genre.pre"></span><mark class="rounded bg-[var(--primary-color)]/20 px-0.5 text-inherit" x-text="genre.hit"></mark><span x-text="genre.post"></span></span><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-3 h-3"><use href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right" xlink:href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right"></use></svg></a></li></template></ul></template><p x-show="!results.length" class="px-3 py-6 text-center text-sm text-slate-500 dark:text-slate-400">
+                    No genres match “<span x-text="query.trim()"></span>”
+                </p></div><template x-if="loading && !loaded"><div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"><template x-for="col in 3" :key="col"><div class="space-y-4"><div class="h-4 w-20 rounded bg-slate-200 dark:bg-slate-700 animate-pulse"></div><template x-for="row in 4" :key="row"><div class="h-4 w-full rounded bg-slate-100 dark:bg-slate-800 animate-pulse"></div></template></div></template></div></template><div x-show="loaded && !showAll && !query"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 translate-y-1"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 -translate-y-1"><div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"><template x-for="(group, gi) in featured" :key="gi"><div class="space-y-3"><div class="flex items-center gap-2 mb-3"><span class="inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold bg-[var(--primary-color)]/10 text-[var(--primary-color)]" x-text="group.letter"></span><span class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Genres</span></div><ul class="space-y-1.5"><template x-for="genre in group.genres" :key="genre.slug"><li><a :href="genre.url"
+                                           class="flex items-center justify-between rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-[var(--primary-color)]/10 hover:text-[var(--primary-color)] dark:text-slate-300 dark:hover:bg-[var(--primary-color)]/20 dark:hover:text-white transition"><span class="line-clamp-1" x-text="genre.title"></span><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-3 h-3"><use href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right" xlink:href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right"></use></svg></a></li></template></ul></div></template></div></div><div x-show="loaded && showAll && !query" x-cloak
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 -translate-y-1"
+                     class="space-y-4"><div><p class="text-sm font-semibold text-slate-800 dark:text-slate-100">All Genres</p><p class="text-xs text-slate-500 dark:text-slate-400">Scroll to explore every genre available on the platform.</p></div><div class="max-h-80 overflow-y-auto pr-2 scrollbar scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700 scrollbar-track-transparent"><div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"><template x-for="(group, gi) in all" :key="gi"><div class="space-y-3"><div class="flex items-center gap-2 mb-3"><span class="inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold bg-[var(--primary-color)]/10 text-[var(--primary-color)]" x-text="group.letter"></span><span class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Genres</span></div><ul class="space-y-1.5"><template x-for="genre in group.genres" :key="genre.slug"><li><a :href="genre.url"
+                                                   class="flex items-center justify-between rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-[var(--primary-color)]/10 hover:text-[var(--primary-color)] dark:text-slate-300 dark:hover:bg-[var(--primary-color)]/20 dark:hover:text-white transition"><span class="line-clamp-1" x-text="genre.title"></span><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-3 h-3"><use href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right" xlink:href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right"></use></svg></a></li></template></ul></div></template></div></div></div></div></div></li><li class="relative shrink-0 " data-nav-item
+                                    ><a href="/recent-updates"
+                                            class="px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:border-[var(--primary-color)] dark:hover:text-gray-100 hover:rounded-lg flex items-center relative after:absolute after:inset-0 after:rounded-lg hover:after:w-full after:transition hover:after:bg-gray-400/10"
+                                            ><span class="tracking-tight font-medium whitespace-nowrap flex items-center gap-1">
+                                                Recent Updates
+                                                                                            </span></a></li><li class="relative shrink-0 hidden xl:block" data-nav-item
+                                    ><a href="https://ankergames.net/collections"
+                                            class="px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:border-[var(--primary-color)] dark:hover:text-gray-100 hover:rounded-lg flex items-center relative after:absolute after:inset-0 after:rounded-lg hover:after:w-full after:transition hover:after:bg-gray-400/10"
+                                            ><span class="tracking-tight font-medium whitespace-nowrap flex items-center gap-1">
+                                                Collections
+                                                                                            </span></a></li><li class="relative shrink-0 hidden xl:block" data-nav-item
+                                    ><a href="/donations"
+                                            class="px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:border-[var(--primary-color)] dark:hover:text-gray-100 hover:rounded-lg flex items-center relative after:absolute after:inset-0 after:rounded-lg hover:after:w-full after:transition hover:after:bg-gray-400/10"
+                                            ><span class="tracking-tight font-medium whitespace-nowrap flex items-center gap-1">
+                                                Donate
+                                                                                            </span></a></li><li class="relative shrink-0 hidden 2xl:block" data-nav-item
+                                    ><a href="/companies"
+                                            class="px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:border-[var(--primary-color)] dark:hover:text-gray-100 hover:rounded-lg flex items-center relative after:absolute after:inset-0 after:rounded-lg hover:after:w-full after:transition hover:after:bg-gray-400/10"
+                                            ><span class="tracking-tight font-medium whitespace-nowrap flex items-center gap-1">
+                                                Publishers
+                                                                                            </span></a></li><li class="relative shrink-0 hidden 2xl:block" data-nav-item
+                                    ><a href="https://ankergames.net/request"
+                                            class="px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:border-[var(--primary-color)] dark:hover:text-gray-100 hover:rounded-lg flex items-center relative after:absolute after:inset-0 after:rounded-lg hover:after:w-full after:transition hover:after:bg-gray-400/10"
+                                            ><span class="tracking-tight font-medium whitespace-nowrap flex items-center gap-1">
+                                                Request
+                                                                                            </span></a></li><li class="relative shrink-0 hidden 2xl:block" data-nav-item
+                                    ><a href="/leaderboard"
+                                            class="px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:border-[var(--primary-color)] dark:hover:text-gray-100 hover:rounded-lg flex items-center relative after:absolute after:inset-0 after:rounded-lg hover:after:w-full after:transition hover:after:bg-gray-400/10"
+                                            ><span class="tracking-tight font-medium whitespace-nowrap flex items-center gap-1">
+                                                Leaderboard
+                                                                                            </span></a></li><li class="relative shrink-0 hidden" data-nav-item
+                                    ><a href="/blog"
+                                            class="px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:border-[var(--primary-color)] dark:hover:text-gray-100 hover:rounded-lg flex items-center relative after:absolute after:inset-0 after:rounded-lg hover:after:w-full after:transition hover:after:bg-gray-400/10"
+                                            ><span class="tracking-tight font-medium whitespace-nowrap flex items-center gap-1">
+                                                Blog
+                                                                                            </span></a></li><li x-ref="moreBtn" class="relative shrink-0"
+                            ><div x-data="navDropdown"
+                                @mouseenter="enter()"
+                                @mouseleave="leave()"><button type="button"
+                                    class="px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:border-[var(--primary-color)] dark:hover:text-gray-100 hover:rounded-lg flex items-center relative after:absolute after:inset-0 after:rounded-lg hover:after:w-full after:transition hover:after:bg-gray-400/10 focus:outline-none"
+                                    @click.prevent="toggle()" role="button" :aria-expanded="open.toString()"><span class="tracking-tight font-medium whitespace-nowrap flex items-center gap-1">
+                                        More
+                                        <svg class="w-3.5 h-3.5 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg></span></button><div x-cloak x-show="open" x-ref="panel"
+                                    x-transition:enter="transition ease-out duration-150"
+                                    x-transition:enter-start="opacity-0 -translate-y-2"
+                                    x-transition:enter-end="opacity-100 translate-y-0"
+                                    x-transition:leave="transition ease-in duration-150"
+                                    x-transition:leave-start="opacity-100 translate-y-0"
+                                    x-transition:leave-end="opacity-0 -translate-y-2"
+                                    class="absolute left-1/2 top-full mt-3 rounded-2xl border border-slate-200/80 dark:border-slate-800/70 bg-white/95 dark:bg-slate-950/95 shadow-2xl shadow-slate-900/10 backdrop-blur"
+                                    style="display:none; min-width: 220px; transform: translateX(calc(-50% + var(--dd-shift, 0px)));"
+                                    @click.outside="close()" @keydown.escape.window="close()"><div class="p-4 sm:p-5 bg-white dark:bg-slate-900 rounded-2xl text-slate-700 dark:text-slate-200"><div data-more-overflow-section><div class="space-y-1"><a href="/games-list" data-overflow-item
+                                                                class="flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium text-slate-600 hover:bg-[var(--primary-color)]/10 hover:text-[var(--primary-color)] dark:text-slate-200 dark:hover:bg-[var(--primary-color)]/20 dark:hover:text-white transition hidden"><span class="line-clamp-1">All Games</span><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-3 h-3 text-slate-400"><use href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right" xlink:href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right"></use></svg></a><a href="https://ankergames.net/top-games" data-overflow-item
+                                                                class="flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium text-slate-600 hover:bg-[var(--primary-color)]/10 hover:text-[var(--primary-color)] dark:text-slate-200 dark:hover:bg-[var(--primary-color)]/20 dark:hover:text-white transition hidden"><span class="line-clamp-1">Top</span><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-3 h-3 text-slate-400"><use href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right" xlink:href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right"></use></svg></a><a href="https://ankergames.net/trending" data-overflow-item
+                                                                class="flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium text-slate-600 hover:bg-[var(--primary-color)]/10 hover:text-[var(--primary-color)] dark:text-slate-200 dark:hover:bg-[var(--primary-color)]/20 dark:hover:text-white transition hidden"><span class="line-clamp-1">Trending</span><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-3 h-3 text-slate-400"><use href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right" xlink:href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right"></use></svg></a><span data-overflow-item
+                                                                class="flex items-center gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400 hidden"><span class="line-clamp-1">Genre</span></span><a href="/recent-updates" data-overflow-item
+                                                                class="flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium text-slate-600 hover:bg-[var(--primary-color)]/10 hover:text-[var(--primary-color)] dark:text-slate-200 dark:hover:bg-[var(--primary-color)]/20 dark:hover:text-white transition hidden"><span class="line-clamp-1">Recent Updates</span><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-3 h-3 text-slate-400"><use href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right" xlink:href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right"></use></svg></a><a href="https://ankergames.net/collections" data-overflow-item
+                                                                class="flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium text-slate-600 hover:bg-[var(--primary-color)]/10 hover:text-[var(--primary-color)] dark:text-slate-200 dark:hover:bg-[var(--primary-color)]/20 dark:hover:text-white transition xl:hidden"><span class="line-clamp-1">Collections</span><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-3 h-3 text-slate-400"><use href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right" xlink:href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right"></use></svg></a><a href="/donations" data-overflow-item
+                                                                class="flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium text-slate-600 hover:bg-[var(--primary-color)]/10 hover:text-[var(--primary-color)] dark:text-slate-200 dark:hover:bg-[var(--primary-color)]/20 dark:hover:text-white transition xl:hidden"><span class="line-clamp-1">Donate</span><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-3 h-3 text-slate-400"><use href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right" xlink:href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right"></use></svg></a><a href="/companies" data-overflow-item
+                                                                class="flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium text-slate-600 hover:bg-[var(--primary-color)]/10 hover:text-[var(--primary-color)] dark:text-slate-200 dark:hover:bg-[var(--primary-color)]/20 dark:hover:text-white transition 2xl:hidden"><span class="line-clamp-1">Publishers</span><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-3 h-3 text-slate-400"><use href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right" xlink:href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right"></use></svg></a><a href="https://ankergames.net/request" data-overflow-item
+                                                                class="flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium text-slate-600 hover:bg-[var(--primary-color)]/10 hover:text-[var(--primary-color)] dark:text-slate-200 dark:hover:bg-[var(--primary-color)]/20 dark:hover:text-white transition 2xl:hidden"><span class="line-clamp-1">Request</span><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-3 h-3 text-slate-400"><use href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right" xlink:href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right"></use></svg></a><a href="/leaderboard" data-overflow-item
+                                                                class="flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium text-slate-600 hover:bg-[var(--primary-color)]/10 hover:text-[var(--primary-color)] dark:text-slate-200 dark:hover:bg-[var(--primary-color)]/20 dark:hover:text-white transition 2xl:hidden"><span class="line-clamp-1">Leaderboard</span><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-3 h-3 text-slate-400"><use href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right" xlink:href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right"></use></svg></a><a href="/blog" data-overflow-item
+                                                                class="flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium text-slate-600 hover:bg-[var(--primary-color)]/10 hover:text-[var(--primary-color)] dark:text-slate-200 dark:hover:bg-[var(--primary-color)]/20 dark:hover:text-white transition "><span class="line-clamp-1">Blog</span><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-3 h-3 text-slate-400"><use href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right" xlink:href="https://ankergames.net/static/sprite/sprite.svg#arrow-up-right"></use></svg></a></div></div></div></div></div></li></ul></nav><nav class="flex ml-auto rtl:mr-auto rtl:ml-0 min-w-0 flex-shrink-0"><ul class="navbar-icons flex justify-end items-center text-sm gap-x-1.5 sm:gap-x-2 md:gap-x-3 lg:gap-x-4 xl:gap-x-5 flex-shrink-0"><li class="block lg:hidden"><button type="button" aria-label="Search"
+                            class="w-8 h-8 sm:w-10 sm:h-10 flex items-center text-gray-500 dark:text-gray-400 dark:hover:text-[var(--primary-color)] hover:text-[var(--primary-color)] justify-center hover:text-[var(--primary-color)] transition duration-150 rounded-full"
+                            @click.prevent="searchOpen = true" aria-controls="search-modal"
+                            @keydown.window.ctrl.q="searchOpen = true"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-4 h-4 sm:w-5 sm:h-5"><use href="https://ankergames.net/static/sprite/sprite.svg#search" xlink:href="https://ankergames.net/static/sprite/sprite.svg#search"></use></svg></button></li><li class="hidden sm:block"><div wire:key="lw-393615433-0" wire:snapshot="{&quot;data&quot;:{&quot;loading&quot;:false,&quot;loadingMessage&quot;:&quot;&quot;},&quot;memo&quot;:{&quot;id&quot;:&quot;YwvhiIcY1FfGJplDrrPg&quot;,&quot;name&quot;:&quot;random-game-nav-button&quot;,&quot;path&quot;:&quot;login&quot;,&quot;method&quot;:&quot;GET&quot;,&quot;release&quot;:&quot;a-a-a&quot;,&quot;children&quot;:[],&quot;scripts&quot;:[],&quot;assets&quot;:[],&quot;errors&quot;:[],&quot;locale&quot;:&quot;en&quot;,&quot;islands&quot;:[]},&quot;checksum&quot;:&quot;2a3e63201d0c792142b286cbf8fe657cc0a205ea4ff546f5be2eceb423b2e351&quot;}" wire:effects="[]" wire:id="YwvhiIcY1FfGJplDrrPg" wire:name="random-game-nav-button"><div class="quantum-portal-container inline-flex items-center justify-center"
+         x-data="{
+            hovering: false,
+            get loading() { return $wire.loading; },
+            set loading(value) { $wire.loading = value; }
+         }"
+         x-init="$watch('loading', value => { if (value) hovering = false })"><button wire:click="discoverGame"
+                @click="loading = true"
+                data-tippy-content="Discover a random game"
+                aria-label="Discover a random game"
+                aria-describedby="portal-description"
+                :aria-busy="loading"
+                :disabled="loading"
+                @mouseenter="if (!loading) hovering = true"
+                @mouseleave="hovering = false"
+                class="quantum-portal-btn tooltip relative w-10 h-10 sm:w-11 sm:h-11
+                       focus:outline-none transform transition-transform duration-500
+                       hover:scale-110 active:scale-95 min-w-[44px] min-h-[44px]"
+                :class="loading ? 'cursor-wait' : 'cursor-pointer'"><div class="absolute inset-0 rounded-full overflow-hidden"><div class="portal-vortex absolute inset-0 rounded-full"
+                    :class="{ 'portal-active': hovering && !loading, 'portal-loading': loading }"></div><div
+                    class="absolute inset-0 rounded-full border-2 border-cyan-400/30 
+                            animate-pulse shadow-[0_0_15px_rgba(6,182,212,0.3)]"></div><div class="absolute inset-0 rounded-full portal-ring-outer"><svg class="w-full h-full" viewBox="0 0 44 44"><circle cx="22" cy="22" r="20" fill="none" stroke="url(#portal-gradient-outer)"
+                            stroke-width="2" stroke-dasharray="4 2" opacity="0.8" /></svg></div><div class="absolute inset-[15%] rounded-full portal-ring-inner"><svg class="w-full h-full" viewBox="0 0 30 30"><circle cx="15" cy="15" r="13" fill="none" stroke="url(#portal-gradient-inner)"
+                            stroke-width="1.5" stroke-dasharray="3 3" opacity="0.7" /></svg></div></div><div
+                class="absolute inset-[25%] rounded-full bg-gradient-to-br from-purple-900/90 via-indigo-800/80 to-cyan-900/90 
+                        shadow-[inset_0_2px_8px_rgba(147,51,234,0.5)]
+                        group-hover:shadow-[inset_0_2px_12px_rgba(147,51,234,0.8)]
+                        transition-all duration-500"><div class="absolute inset-0 rounded-full overflow-hidden"><span class="quantum-particle particle-1"></span><span class="quantum-particle particle-2"></span><span class="quantum-particle particle-3"></span><span class="quantum-particle particle-4"></span></div><div class="absolute inset-0 flex items-center justify-center"><svg x-show="loading" x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 rotate-0" x-transition:enter-end="opacity-100 rotate-180"
+                         class="w-5 h-5 text-cyan-200 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><div x-show="!loading" class="portal-icon-wrapper" :class="hovering ? 'portal-icon-active' : ''"><svg class="w-5 h-5 text-cyan-200" viewBox="0 0 24 24" fill="none"
+                            xmlns="http://www.w3.org/2000/svg"><path d="M12 2L12 22" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                opacity="0.3" /><path d="M2 12L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                opacity="0.3" /><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"
+                                fill="none" class="portal-center-ring" /><circle cx="12" cy="12" r="6" stroke="currentColor" stroke-width="1.5"
+                                fill="none" opacity="0.5" class="portal-middle-ring" /><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1"
+                                fill="none" opacity="0.3" class="portal-outer-ring" /></svg></div></div><div
+                    class="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-white/10 to-transparent 
+                            opacity-0 group-hover:opacity-100 transition-opacity duration-700 portal-shimmer"></div></div><div
+                class="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500
+                        shadow-[0_0_20px_rgba(6,182,212,0.6)] pointer-events-none"></div><svg width="0" height="0" class="absolute pointer-events-none"><defs><linearGradient id="portal-gradient-outer" x1="0%" y1="0%" x2="100%"
+                        y2="100%"><stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" /><stop offset="50%" style="stop-color:#06b6d4;stop-opacity:1" /><stop offset="100%" style="stop-color:#10b981;stop-opacity:1" /></linearGradient><linearGradient id="portal-gradient-inner" x1="100%" y1="100%" x2="0%"
+                        y2="0%"><stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" /><stop offset="50%" style="stop-color:#ec4899;stop-opacity:1" /><stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" /></linearGradient></defs></svg></button><div id="portal-description" class="sr-only">
+            Click to discover a random game from our collection. This will redirect you to a randomly selected game.
+        </div><div x-show="loading" aria-live="polite" aria-atomic="true" class="sr-only">
+            Finding a random game...
+        </div></div><style>
+        /* Screen reader only utility class */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        
+        /* Critical loading state for immediate feedback */
+        .quantum-portal-btn[aria-busy="true"] {
+            pointer-events: none;
+        }
+    </style></div></li><li class="relative hidden md:inline-flex" x-data="{ langOpen: false }"><button @click.prevent="langOpen = !langOpen" :aria-expanded="langOpen" aria-label="Language"
+                            class="relative p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200"><img src="https://ankergames.net/static/img/flags/en.svg"
+                                class="w-5 h-5 rounded-full object-cover" alt="Language" width="20" height="20"></button><div class="origin-top-right z-10 absolute top-full mt-3 right-0 bg-white p-3 w-52 rounded-xl shadow-lg border border-gray-100 text-sm dark:bg-gray-900 dark:border-gray-800"
+                            @click.outside="langOpen = false" @keydown.escape.window="langOpen = false"
+                            x-show="langOpen" x-cloak
+                            x-transition:enter="transition ease-out duration-200 transform"
+                            x-transition:enter-start="opacity-0 -translate-y-2"
+                            x-transition:enter-end="opacity-100 translate-y-0"
+                            x-transition:leave="transition ease-out duration-150"
+                            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                            style="display: none;"><ul class="grid grid-cols-1"><li><a rel="nofollow" href="https://ankergames.net/lang/en"
+                                            class="py-2 px-3 rounded-lg flex gap-x-3 items-center tracking-tighter text-[var(--primary-color)] font-medium bg-[var(--primary-color)]/5"><img src="https://ankergames.net/static/img/flags/en.svg"
+                                                class="h-4 w-auto rounded-full" alt="English flag" width="16" height="16" loading="lazy"><span>English</span></a></li><li><a rel="nofollow" href="https://ankergames.net/lang/tr"
+                                            class="py-2 px-3 rounded-lg flex gap-x-3 items-center tracking-tighter text-gray-500 dark:text-gray-300 hover:text-[var(--primary-color)] dark:hover:text-white dark:hover:bg-gray-700/50"><img src="https://ankergames.net/static/img/flags/tr.svg"
+                                                class="h-4 w-auto rounded-full" alt="Türkçe flag" width="16" height="16" loading="lazy"><span>Türkçe</span></a></li><li><a rel="nofollow" href="https://ankergames.net/lang/de"
+                                            class="py-2 px-3 rounded-lg flex gap-x-3 items-center tracking-tighter text-gray-500 dark:text-gray-300 hover:text-[var(--primary-color)] dark:hover:text-white dark:hover:bg-gray-700/50"><img src="https://ankergames.net/static/img/flags/de.svg"
+                                                class="h-4 w-auto rounded-full" alt="Deutschland flag" width="16" height="16" loading="lazy"><span>Deutschland</span></a></li><li><a rel="nofollow" href="https://ankergames.net/lang/fr"
+                                            class="py-2 px-3 rounded-lg flex gap-x-3 items-center tracking-tighter text-gray-500 dark:text-gray-300 hover:text-[var(--primary-color)] dark:hover:text-white dark:hover:bg-gray-700/50"><img src="https://ankergames.net/static/img/flags/fr.svg"
+                                                class="h-4 w-auto rounded-full" alt="France flag" width="16" height="16" loading="lazy"><span>France</span></a></li><li><a rel="nofollow" href="https://ankergames.net/lang/ja"
+                                            class="py-2 px-3 rounded-lg flex gap-x-3 items-center tracking-tighter text-gray-500 dark:text-gray-300 hover:text-[var(--primary-color)] dark:hover:text-white dark:hover:bg-gray-700/50"><img src="https://ankergames.net/static/img/flags/ja.svg"
+                                                class="h-4 w-auto rounded-full" alt="日本 flag" width="16" height="16" loading="lazy"><span>日本</span></a></li><li><a rel="nofollow" href="https://ankergames.net/lang/ar"
+                                            class="py-2 px-3 rounded-lg flex gap-x-3 items-center tracking-tighter text-gray-500 dark:text-gray-300 hover:text-[var(--primary-color)] dark:hover:text-white dark:hover:bg-gray-700/50"><img src="https://ankergames.net/static/img/flags/ar.svg"
+                                                class="h-4 w-auto rounded-full" alt="عربي flag" width="16" height="16" loading="lazy"><span>عربي</span></a></li><li><a rel="nofollow" href="https://ankergames.net/lang/es"
+                                            class="py-2 px-3 rounded-lg flex gap-x-3 items-center tracking-tighter text-gray-500 dark:text-gray-300 hover:text-[var(--primary-color)] dark:hover:text-white dark:hover:bg-gray-700/50"><img src="https://ankergames.net/static/img/flags/es.svg"
+                                                class="h-4 w-auto rounded-full" alt="Español flag" width="16" height="16" loading="lazy"><span>Español</span></a></li><li><a rel="nofollow" href="https://ankergames.net/lang/pt"
+                                            class="py-2 px-3 rounded-lg flex gap-x-3 items-center tracking-tighter text-gray-500 dark:text-gray-300 hover:text-[var(--primary-color)] dark:hover:text-white dark:hover:bg-gray-700/50"><img src="https://ankergames.net/static/img/flags/pt.svg"
+                                                class="h-4 w-auto rounded-full" alt="Português flag" width="16" height="16" loading="lazy"><span>Português</span></a></li><li><a rel="nofollow" href="https://ankergames.net/lang/ru"
+                                            class="py-2 px-3 rounded-lg flex gap-x-3 items-center tracking-tighter text-gray-500 dark:text-gray-300 hover:text-[var(--primary-color)] dark:hover:text-white dark:hover:bg-gray-700/50"><img src="https://ankergames.net/static/img/flags/ru.svg"
+                                                class="h-4 w-auto rounded-full" alt="Русский flag" width="16" height="16" loading="lazy"><span>Русский</span></a></li><li><a rel="nofollow" href="https://ankergames.net/lang/zh"
+                                            class="py-2 px-3 rounded-lg flex gap-x-3 items-center tracking-tighter text-gray-500 dark:text-gray-300 hover:text-[var(--primary-color)] dark:hover:text-white dark:hover:bg-gray-700/50"><img src="https://ankergames.net/static/img/flags/zh.svg"
+                                                class="h-4 w-auto rounded-full" alt="中文 flag" width="16" height="16" loading="lazy"><span>中文</span></a></li></ul></div></li><li class="theme-toggle"><button @click="toggleDarkMode()" aria-label="Toggle dark mode"
+                                class="relative p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200"><div class="relative w-5 h-5"><svg class="absolute inset-0 w-5 h-5 transition-all duration-300 theme-icon-sun"
+                                     fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg><svg class="absolute inset-0 w-5 h-5 transition-all duration-300 theme-icon-moon"
+                                     fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg></div></button></li><li class="cf-auth-fallback" style="display:none"><a href="https://ankergames.net/settings"
+                                class="flex items-center justify-center w-9 h-9 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-150"
+                                title="Settings"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg></a></li><li class="cf-guest-only hidden lg:block"><a href="https://ankergames.net/login"
+                                class="flex items-center px-3 py-2 text-sm font-medium text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-500 rounded-lg transition-all duration-150">
+                                Log in
+                            </a></li><li class="cf-guest-only hidden lg:block"><a href="https://ankergames.net/register"
+                                    class="flex items-center px-4 py-2 text-sm font-semibold text-white dark:text-gray-950 bg-[var(--primary-color)] hover:bg-[var(--primary-color)]/90 rounded-lg transition-colors duration-150 shadow-sm">
+                                    Sign up
+                                </a></li><li class="cf-guest-only block lg:hidden"><a href="https://ankergames.net/login" aria-label="Login"
+                                class="flex items-center justify-center w-9 h-9 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-150"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg></a></li></ul></nav></div></div></header><style>
+        /* Gradient animation for theme toggle */
+        @keyframes gradientShift {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+    </style><aside id="sidebar"
+            class="fixed top-[64px] bottom-0 group top-0 left-0 bg-white lg:translate-x-0 lg:right-auto lg:bottom-0 dark:scrollbar-y hidden flex-col z-40 dark:bg-gray-950 transition w-full lg:w-64 transition-all duration-200 ease-out"
+            :class="[sidebarToggle ? 'translate-x-0 flex!' : '-translate-x-full hidden']"
+            @click.outside="sidebarToggle = false"><div
+                class="flex flex-col overflow-y-auto scrollbar-y h-full px-2 lg:px-4 scrollbar scrollbar-thumb-gray-100 dark:scrollbar-thumb-white/10 scrollbar-thin scrollbar-track-transparent"><div><a href="/games-list"
+                                class="px-4 gap-x-5 py-3 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-50/70 hover:border-[var(--primary-color)] dark:hover:text-gray-100 dark:hover:bg-gray-900 transition rounded-lg flex items-center "><div class="w-5 h-5 border-4 rounded-full border-gray-400"
+                                        x-bind:class="compactToggle ? 'w-6 h-6' : ''"></div><div class="tracking-tighter whitespace-nowrap flex-1 line-clamp-1"
+                                    :class="compactToggle ? 'lg:hidden' : 'block'">All Games</div></a></div><div><a href="https://ankergames.net/top-games"
+                                class="px-4 gap-x-5 py-3 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-50/70 hover:border-[var(--primary-color)] dark:hover:text-gray-100 dark:hover:bg-gray-900 transition rounded-lg flex items-center "><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-5 h-5" fill="currentColor" stroke="none" stroke-width="0" x-bind:class="compactToggle ? 'w-6 h-6' : ''"><use href="https://ankergames.net/static/sprite/sprite.svg#top" xlink:href="https://ankergames.net/static/sprite/sprite.svg#top"></use></svg><div class="tracking-tighter whitespace-nowrap flex-1 line-clamp-1"
+                                    :class="compactToggle ? 'lg:hidden' : 'block'">Top</div></a></div><div><a href="https://ankergames.net/trending"
+                                class="px-4 gap-x-5 py-3 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-50/70 hover:border-[var(--primary-color)] dark:hover:text-gray-100 dark:hover:bg-gray-900 transition rounded-lg flex items-center "><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-5 h-5" fill="currentColor" stroke="none" stroke-width="0" x-bind:class="compactToggle ? 'w-6 h-6' : ''"><use href="https://ankergames.net/static/sprite/sprite.svg#trending" xlink:href="https://ankergames.net/static/sprite/sprite.svg#trending"></use></svg><div class="tracking-tighter whitespace-nowrap flex-1 line-clamp-1"
+                                    :class="compactToggle ? 'lg:hidden' : 'block'">Trending</div></a></div><div class="border-t border-gray-100 dark:border-gray-800/50 my-6"></div><div x-data="{
+                            openGenres: false,
+                            showAllGenres: false,
+                            loaded: false,
+                            loading: false,
+                            featured: [],
+                            all: [],
+                            query: '',
+                            async loadGenres() {
+                                if (this.loaded || this.loading) return;
+                                this.loading = true;
+                                try {
+                                    const res = await fetch('https://ankergames.net/api/genres/nav');
+                                    const data = await res.json();
+                                    this.featured = (data.featured || []).flatMap(g => g.genres);
+                                    this.all = (data.all || []).flatMap(g => g.genres);
+                                    this.loaded = true;
+                                } catch (e) {
+                                    console.error('Failed to load genres', e);
+                                } finally {
+                                    this.loading = false;
+                                }
+                            },
+                            fold(s) { return String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); },
+                            get results() {
+                                const q = this.fold(this.query.trim());
+                                if (!q) return [];
+                                const out = [];
+                                for (const genre of (this.all.length ? this.all : this.featured)) {
+                                    const at = this.fold(genre.title).indexOf(q);
+                                    if (at === -1) continue;
+                                    out.push({ ...genre, at, pre: genre.title.slice(0, at), hit: genre.title.slice(at, at + q.length), post: genre.title.slice(at + q.length) });
+                                }
+                                return out.sort((a, b) => a.at - b.at || a.title.localeCompare(b.title)).slice(0, 36);
+                            },
+                            openFirstResult() {
+                                const first = this.results[0];
+                                if (first) window.location.assign(first.url);
+                            }
+                        }" class="mb-4"><button type="button"
+                                class="w-full px-4 gap-x-5 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-50/70 dark:hover:text-gray-100 dark:hover:bg-gray-900 transition rounded-lg flex items-center justify-between"
+                                @click="openGenres = !openGenres; if (openGenres) loadGenres(); if (!openGenres) showAllGenres = false"><span class="flex items-center gap-3"><span class="w-2 h-2 rounded-full bg-[var(--primary-color)] inline-block"></span><span>Genre</span></span><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-4 h-4 transition-transform" x-bind:class="openGenres ? 'rotate-180' : ''"><use href="https://ankergames.net/static/sprite/sprite.svg#chevron-down" xlink:href="https://ankergames.net/static/sprite/sprite.svg#chevron-down"></use></svg></button><div x-show="openGenres" x-transition x-cloak style="display:none" class="mt-2 ml-4 space-y-3"><label class="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-gray-400 focus-within:border-[var(--primary-color)] dark:border-gray-800 dark:bg-gray-900"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="h-4 w-4 shrink-0" stroke-width="2"><use href="https://ankergames.net/static/sprite/sprite.svg#search" xlink:href="https://ankergames.net/static/sprite/sprite.svg#search"></use></svg><input type="search" size="1" x-model="query" enterkeyhint="go" autocomplete="off" spellcheck="false"
+                                           placeholder="Search genres" aria-label="Search genres"
+                                           @keydown.enter.prevent="openFirstResult()"
+                                           class="w-full border-0 bg-transparent p-0 text-sm text-gray-900 placeholder-gray-400 focus:ring-0 dark:text-white"><button type="button" x-show="query" x-cloak @click="query = ''"
+                                            class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                                            aria-label="Clear search"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="h-3.5 w-3.5" stroke-width="2"><use href="https://ankergames.net/static/sprite/sprite.svg#close" xlink:href="https://ankergames.net/static/sprite/sprite.svg#close"></use></svg></button></label><div x-show="loaded && query" x-cloak class="space-y-1" aria-live="polite"><template x-for="genre in results" :key="genre.slug"><a :href="genre.url" class="block text-sm text-gray-600 dark:text-gray-300 hover:text-[var(--primary-color)] dark:hover:text-white py-1.5 transition"><span x-text="genre.pre"></span><mark class="rounded bg-[var(--primary-color)]/20 px-0.5 text-inherit" x-text="genre.hit"></mark><span x-text="genre.post"></span></a></template><p x-show="!results.length" class="py-2 text-sm text-gray-500 dark:text-gray-400">No genres match “<span x-text="query.trim()"></span>”</p></div><template x-if="loading && !loaded"><div class="space-y-2 py-2"><template x-for="i in 5" :key="i"><div class="h-4 rounded bg-gray-200 dark:bg-gray-700 animate-pulse" :style="'width:' + (60 + Math.random() * 30) + '%'"></div></template></div></template><div x-show="loaded && !showAllGenres && !query" x-cloak style="display:none"
+                                    x-transition:enter="transition ease-out duration-200"
+                                    x-transition:enter-start="opacity-0 translate-y-1"
+                                    x-transition:enter-end="opacity-100 translate-y-0"
+                                    x-transition:leave="transition ease-in duration-150"
+                                    x-transition:leave-start="opacity-100 translate-y-0"
+                                    x-transition:leave-end="opacity-0 -translate-y-1"
+                                    class="space-y-1.5"><template x-for="genre in featured" :key="genre.slug"><a :href="genre.url"
+                                            class="block text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 py-1.5"
+                                            x-text="genre.title"></a></template><button type="button"
+                                            class="mt-2 text-xs font-semibold text-[var(--primary-color)] hover:text-[var(--primary-color)]/80 inline-flex items-center gap-1"
+                                            @click="showAllGenres = true"
+                                            x-show="all.length > 0"><span>Show All</span><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-3 h-3 -rotate-90"><use href="https://ankergames.net/static/sprite/sprite.svg#arrow-down" xlink:href="https://ankergames.net/static/sprite/sprite.svg#arrow-down"></use></svg></button></div><div x-show="loaded && showAllGenres && !query" x-cloak style="display:none"
+                                        x-transition:enter="transition ease-out duration-200"
+                                        x-transition:enter-start="opacity-0 translate-y-1"
+                                        x-transition:enter-end="opacity-100 translate-y-0"
+                                        x-transition:leave="transition ease-in duration-150"
+                                        x-transition:leave-start="opacity-100 translate-y-0"
+                                        x-transition:leave-end="opacity-0 -translate-y-1"
+                                        class="space-y-2"><div class="flex items-center justify-between"><span class="text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">All Genres</span><button type="button"
+                                                class="text-[10px] font-semibold px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition inline-flex items-center gap-1"
+                                                @click="showAllGenres = false"
+                                                x-show="featured.length > 0"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-3 h-3 rotate-90"><use href="https://ankergames.net/static/sprite/sprite.svg#arrow-down" xlink:href="https://ankergames.net/static/sprite/sprite.svg#arrow-down"></use></svg><span>Back</span></button></div><div class="max-h-64 overflow-y-auto pr-2 scrollbar scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent space-y-1"><template x-for="genre in all" :key="genre.slug"><a :href="genre.url"
+                                                    class="block text-sm text-gray-600 dark:text-gray-300 hover:text-[var(--primary-color)] dark:hover:text-white py-1.5 transition"
+                                                    x-text="genre.title"></a></template></div></div></div></div><div><a href="/recent-updates"
+                                class="px-4 gap-x-5 py-3 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-50/70 hover:border-[var(--primary-color)] dark:hover:text-gray-100 dark:hover:bg-gray-900 transition rounded-lg flex items-center "><div class="w-5 h-5 border-4 rounded-full border-gray-400"
+                                        x-bind:class="compactToggle ? 'w-6 h-6' : ''"></div><div class="tracking-tighter whitespace-nowrap flex-1 line-clamp-1"
+                                    :class="compactToggle ? 'lg:hidden' : 'block'">Recent Updates</div></a></div><div><a href="https://ankergames.net/collections"
+                                class="px-4 gap-x-5 py-3 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-50/70 hover:border-[var(--primary-color)] dark:hover:text-gray-100 dark:hover:bg-gray-900 transition rounded-lg flex items-center "><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-5 h-5" fill="currentColor" stroke="none" stroke-width="0" x-bind:class="compactToggle ? 'w-6 h-6' : ''"><use href="https://ankergames.net/static/sprite/sprite.svg#collection" xlink:href="https://ankergames.net/static/sprite/sprite.svg#collection"></use></svg><div class="tracking-tighter whitespace-nowrap flex-1 line-clamp-1"
+                                    :class="compactToggle ? 'lg:hidden' : 'block'">Collections</div></a></div><div><a href="/donations"
+                                class="px-4 gap-x-5 py-3 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-50/70 hover:border-[var(--primary-color)] dark:hover:text-gray-100 dark:hover:bg-gray-900 transition rounded-lg flex items-center "><div class="w-5 h-5 border-4 rounded-full border-gray-400"
+                                        x-bind:class="compactToggle ? 'w-6 h-6' : ''"></div><div class="tracking-tighter whitespace-nowrap flex-1 line-clamp-1"
+                                    :class="compactToggle ? 'lg:hidden' : 'block'">Donate</div></a></div><div><a href="/companies"
+                                class="px-4 gap-x-5 py-3 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-50/70 hover:border-[var(--primary-color)] dark:hover:text-gray-100 dark:hover:bg-gray-900 transition rounded-lg flex items-center "><div class="w-5 h-5 border-4 rounded-full border-gray-400"
+                                        x-bind:class="compactToggle ? 'w-6 h-6' : ''"></div><div class="tracking-tighter whitespace-nowrap flex-1 line-clamp-1"
+                                    :class="compactToggle ? 'lg:hidden' : 'block'">Publishers</div></a></div><div><a href="https://ankergames.net/request"
+                                class="px-4 gap-x-5 py-3 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-50/70 hover:border-[var(--primary-color)] dark:hover:text-gray-100 dark:hover:bg-gray-900 transition rounded-lg flex items-center "><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-5 h-5" fill="currentColor" stroke="none" stroke-width="0" x-bind:class="compactToggle ? 'w-6 h-6' : ''"><use href="https://ankergames.net/static/sprite/sprite.svg#refresh" xlink:href="https://ankergames.net/static/sprite/sprite.svg#refresh"></use></svg><div class="tracking-tighter whitespace-nowrap flex-1 line-clamp-1"
+                                    :class="compactToggle ? 'lg:hidden' : 'block'">Request</div></a></div><div><a href="/leaderboard"
+                                class="px-4 gap-x-5 py-3 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-50/70 hover:border-[var(--primary-color)] dark:hover:text-gray-100 dark:hover:bg-gray-900 transition rounded-lg flex items-center "><div class="w-5 h-5 border-4 rounded-full border-gray-400"
+                                        x-bind:class="compactToggle ? 'w-6 h-6' : ''"></div><div class="tracking-tighter whitespace-nowrap flex-1 line-clamp-1"
+                                    :class="compactToggle ? 'lg:hidden' : 'block'">Leaderboard</div></a></div><div><a href="/blog"
+                                class="px-4 gap-x-5 py-3 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-50/70 hover:border-[var(--primary-color)] dark:hover:text-gray-100 dark:hover:bg-gray-900 transition rounded-lg flex items-center "><div class="w-5 h-5 border-4 rounded-full border-gray-400"
+                                        x-bind:class="compactToggle ? 'w-6 h-6' : ''"></div><div class="tracking-tighter whitespace-nowrap flex-1 line-clamp-1"
+                                    :class="compactToggle ? 'lg:hidden' : 'block'">Blog</div></a></div><div class="border-t border-gray-100 dark:border-gray-900/50 mb-6 mt-auto"></div><div class="px-3 pb-4 lg:hidden"><div class="text-gray-400 dark:text-gray-500 text-xs uppercase tracking-wider mb-2 px-1">
+                        Language
+                    </div><div class="grid grid-cols-2 gap-1.5"><a rel="nofollow" href="https://ankergames.net/lang/en"
+                                class="py-2 px-2.5 rounded-lg flex gap-x-2 items-center text-sm text-[var(--primary-color)] font-medium bg-[var(--primary-color)]/5"><img src="https://ankergames.net/static/img/flags/en.svg"
+                                    class="h-3.5 w-auto rounded-full" alt="English flag" width="14" height="14" loading="lazy"><span class="truncate">English</span></a><a rel="nofollow" href="https://ankergames.net/lang/tr"
+                                class="py-2 px-2.5 rounded-lg flex gap-x-2 items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800"><img src="https://ankergames.net/static/img/flags/tr.svg"
+                                    class="h-3.5 w-auto rounded-full" alt="Türkçe flag" width="14" height="14" loading="lazy"><span class="truncate">Türkçe</span></a><a rel="nofollow" href="https://ankergames.net/lang/de"
+                                class="py-2 px-2.5 rounded-lg flex gap-x-2 items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800"><img src="https://ankergames.net/static/img/flags/de.svg"
+                                    class="h-3.5 w-auto rounded-full" alt="Deutschland flag" width="14" height="14" loading="lazy"><span class="truncate">Deutschland</span></a><a rel="nofollow" href="https://ankergames.net/lang/fr"
+                                class="py-2 px-2.5 rounded-lg flex gap-x-2 items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800"><img src="https://ankergames.net/static/img/flags/fr.svg"
+                                    class="h-3.5 w-auto rounded-full" alt="France flag" width="14" height="14" loading="lazy"><span class="truncate">France</span></a><a rel="nofollow" href="https://ankergames.net/lang/ja"
+                                class="py-2 px-2.5 rounded-lg flex gap-x-2 items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800"><img src="https://ankergames.net/static/img/flags/ja.svg"
+                                    class="h-3.5 w-auto rounded-full" alt="日本 flag" width="14" height="14" loading="lazy"><span class="truncate">日本</span></a><a rel="nofollow" href="https://ankergames.net/lang/ar"
+                                class="py-2 px-2.5 rounded-lg flex gap-x-2 items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800"><img src="https://ankergames.net/static/img/flags/ar.svg"
+                                    class="h-3.5 w-auto rounded-full" alt="عربي flag" width="14" height="14" loading="lazy"><span class="truncate">عربي</span></a><a rel="nofollow" href="https://ankergames.net/lang/es"
+                                class="py-2 px-2.5 rounded-lg flex gap-x-2 items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800"><img src="https://ankergames.net/static/img/flags/es.svg"
+                                    class="h-3.5 w-auto rounded-full" alt="Español flag" width="14" height="14" loading="lazy"><span class="truncate">Español</span></a><a rel="nofollow" href="https://ankergames.net/lang/pt"
+                                class="py-2 px-2.5 rounded-lg flex gap-x-2 items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800"><img src="https://ankergames.net/static/img/flags/pt.svg"
+                                    class="h-3.5 w-auto rounded-full" alt="Português flag" width="14" height="14" loading="lazy"><span class="truncate">Português</span></a><a rel="nofollow" href="https://ankergames.net/lang/ru"
+                                class="py-2 px-2.5 rounded-lg flex gap-x-2 items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800"><img src="https://ankergames.net/static/img/flags/ru.svg"
+                                    class="h-3.5 w-auto rounded-full" alt="Русский flag" width="14" height="14" loading="lazy"><span class="truncate">Русский</span></a><a rel="nofollow" href="https://ankergames.net/lang/zh"
+                                class="py-2 px-2.5 rounded-lg flex gap-x-2 items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800"><img src="https://ankergames.net/static/img/flags/zh.svg"
+                                    class="h-3.5 w-auto rounded-full" alt="中文 flag" width="14" height="14" loading="lazy"><span class="truncate">中文</span></a></div></div><div class="px-4 lg:px-5 py-6" :class="compactToggle ? 'lg:hidden' : 'block'"><div class="flex flex-wrap text-xs text-gray-500 dark:text-gray-500 gap-x-4 gap-y-2"><a href="https://ankergames.net/page/safety" class="hover:underline">Safety &amp; Verification</a><a href="https://ankergames.net/page/about-us" class="hover:underline">About Us</a><a href="https://ankergames.net/page/terms-of-service" class="hover:underline">Terms of service</a><a href="https://ankergames.net/page/dmca" class="hover:underline">DMCA</a><a href="https://ankergames.net/page/privacy-policy" class="hover:underline">Privacy policy</a><a href="https://ankergames.net/page/cookie-policy" class="hover:underline">Cookie policy</a></div><div class="text-xs mt-4 text-gray-500 dark:text-gray-500">
+                        © 2026 AnkerGames</div></div></div></aside><div
+    class="my-auto relative"><div class="absolute lg:flex items-center justify-center top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 pointer-events-none -z-10 w-1/4 aspect-square hidden dark:flex" aria-hidden="true"><div class="absolute inset-0 translate-z-0 bg-gray-100 dark:bg-gray-800 rounded-full blur-[120px] opacity-70"></div><div class="absolute w-1/4 h-1/4 translate-z-0 bg-gray-100 dark:bg-gray-800 rounded-full blur-2xl"></div></div><div class="max-w-lg mx-auto w-full px-4 my-auto"><div class="text-center"><h1 class="block text-2xl lg:text-3xl font-semibold text-gray-800 dark:text-white">
+                Sign in to your account</h1></div><div class="mt-10"><form method="POST" action="https://ankergames.net/login"><input type="hidden" name="_token" value="lq9DmhqYzwTxh0bF9DL3nO9BVMItHFPLZP98SS6V" autocomplete="off"><div><label class="block text-sm font-medium text-gray-600 mb-3 dark:text-gray-300 dark:font-normal rtl:text-right" for="email">
+    Email
+</label><input  class="block w-full border-gray-200 rounded-md text-sm text-gray-900 px-5 py-3.5 text-sm focus:border-[var(--primary-color)] focus:ring-[var(--primary-color)] dark:bg-gray-800 dark:border-gray-800 dark:text-gray-400 placeholder-gray-400/70 shadow-sm dark:focus:ring-[var(--primary-color)] dark:focus:border-[var(--primary-color)] block mt-1 w-full" id="email" type="email" name="email" required="required" autofocus="autofocus" autocomplete="username" placeholder="Email"></div><div class="mt-4"><div class="flex items-center justify-between"><label class="block text-sm font-medium text-gray-600 mb-3 dark:text-gray-300 dark:font-normal rtl:text-right" for="password">
+    Password
+</label><a class="hover:underline text-sm text-gray-600 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-color)] dark:focus:ring-offset-gray-800 mb-3"
+                                href="https://ankergames.net/forgot-password">
+                                Forgot your password?
+                            </a></div><input  class="block w-full border-gray-200 rounded-md text-sm text-gray-900 px-5 py-3.5 text-sm focus:border-[var(--primary-color)] focus:ring-[var(--primary-color)] dark:bg-gray-800 dark:border-gray-800 dark:text-gray-400 placeholder-gray-400/70 shadow-sm dark:focus:ring-[var(--primary-color)] dark:focus:border-[var(--primary-color)] block w-full" id="password" type="password" name="password" required="required" autocomplete="current-password" placeholder="Password"></div><input id="remember_me" type="hidden" name="remember"><div class="mt-5"><button  class="inline-flex whitespace-nowrap gap-x-3 items-center justify-center px-6 py-3.5 text-sm rounded-base font-[450] disabled:opacity-50 disabled:pointer-events-none transition border border-transparent text-white bg-[var(--primary-color)] hover:bg-[var(--primary-color)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-color)] dark:hover:bg-[var(--primary-color)]/70 dark:focus:ring-offset-gray-800 w-full" type="submit">
+        Sign in
+    </button></div></form><div class="text-sm text-gray-400 dark:text-gray-500 mt-8 text-center"><span>Don&#039;t have an account yet?</span><a href="https://ankergames.net/register"
+                        class="hover:underline font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-color)] dark:focus:ring-offset-gray-800">Create an Account</a></div><div class="my-4"><a href="https://ankergames.net/auth/discord" class="inline-flex whitespace-nowrap gap-x-3 items-center justify-center px-6 py-3.5 text-sm rounded-base font-[450] disabled:opacity-50 disabled:pointer-events-none transition border bg-gray-50 text-gray-700 shadow-sm align-middle hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-[var(--primary-color)] transition-all text-sm dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:border-gray-700 dark:border-gray-800 dark:text-gray-300 dark:hover:text-white dark:focus:ring-offset-gray-800 dark:focus:ring-[var(--primary-color)] w-full gap-x-3" type="button"><svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path fill="currentColor"
+                                d="M524.531,69.836a1.5,1.5,0,0,0-.764-.7A485.065,485.065,0,0,0,404.081,32.03a1.816,1.816,0,0,0-1.923.91,337.461,337.461,0,0,0-14.9,30.6,447.848,447.848,0,0,0-134.426,0,309.541,309.541,0,0,0-15.135-30.6,1.89,1.89,0,0,0-1.924-.91A483.689,483.689,0,0,0,116.085,69.137a1.712,1.712,0,0,0-.788.676C39.068,183.651,18.186,294.69,28.43,404.354a2.016,2.016,0,0,0,.765,1.375A487.666,487.666,0,0,0,176.02,479.918a1.9,1.9,0,0,0,2.063-.676A348.2,348.2,0,0,0,208.12,430.4a1.86,1.86,0,0,0-1.019-2.588,321.173,321.173,0,0,1-45.868-21.853,1.885,1.885,0,0,1-.185-3.126c3.082-2.309,6.166-4.711,9.109-7.137a1.819,1.819,0,0,1,1.9-.256c96.229,43.917,200.41,43.917,295.5,0a1.812,1.812,0,0,1,1.924.233c2.944,2.426,6.027,4.851,9.132,7.16a1.884,1.884,0,0,1-.162,3.126,301.407,301.407,0,0,1-45.89,21.83,1.875,1.875,0,0,0-1,2.611,391.055,391.055,0,0,0,30.014,48.815,1.864,1.864,0,0,0,2.063.7A486.048,486.048,0,0,0,610.7,405.729a1.882,1.882,0,0,0,.765-1.352C623.729,277.594,590.933,167.465,524.531,69.836ZM222.491,337.58c-28.972,0-52.844-26.587-52.844-59.239S193.056,219.1,222.491,219.1c29.665,0,53.306,26.82,52.843,59.239C275.334,310.993,251.924,337.58,222.491,337.58Zm195.38,0c-28.971,0-52.843-26.587-52.843-59.239S388.437,219.1,417.871,219.1c29.667,0,53.307,26.82,52.844,59.239C470.715,310.993,447.538,337.58,417.871,337.58Z" /></svg><span>Sign in with Discord</span></a></div></div></div></div><footer class="w-full lg:py-10 custom-container mt-auto"><div class="text-center"><a class="mx-auto inline-flex mb-5 h-48 w-auto" href="https://ankergames.net" aria-label="AnkerGames Homepage"><div class="hidden dark:block h-full"><img
+                    src="https://ankergames.net/static/img/footer-dark-logo-1769784075.svg"
+                    alt="AnkerGames"
+                    class="w-auto h-full object-cover"
+                                            width="722"
+                        height="636"
+                                        loading="lazy"
+                    fetchpriority="low"
+                ></div><div class="dark:hidden h-full"><img
+                    src="https://ankergames.net/static/img/footer-logo-1769784075.svg"
+                    alt="AnkerGames"
+                    class="w-auto h-full object-cover"
+                                            width="722"
+                        height="636"
+                                        loading="lazy"
+                    fetchpriority="low"
+                ></div></a><div class="text-center  max-w-2xl w-full mx-auto"><p class="text-gray-500 dark:text-gray-400 leading-6">Free Download Pre-installed portable PC games from steam and major publishers with fastest downloads.</p></div><nav aria-label="Genres" data-footer-genres
+                    class="mt-6 mx-auto max-w-4xl flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm"><a href="https://ankergames.net/genre/action"
+                            class="text-gray-500 hover:text-gray-800 hover:underline dark:text-gray-400 dark:hover:text-gray-200">Action</a><a href="https://ankergames.net/genre/adventure"
+                            class="text-gray-500 hover:text-gray-800 hover:underline dark:text-gray-400 dark:hover:text-gray-200">Adventure</a><a href="https://ankergames.net/genre/anime"
+                            class="text-gray-500 hover:text-gray-800 hover:underline dark:text-gray-400 dark:hover:text-gray-200">Anime</a><a href="https://ankergames.net/genre/classic"
+                            class="text-gray-500 hover:text-gray-800 hover:underline dark:text-gray-400 dark:hover:text-gray-200">Classic</a><a href="https://ankergames.net/genre/fighting"
+                            class="text-gray-500 hover:text-gray-800 hover:underline dark:text-gray-400 dark:hover:text-gray-200">Fighting</a><a href="https://ankergames.net/genre/history"
+                            class="text-gray-500 hover:text-gray-800 hover:underline dark:text-gray-400 dark:hover:text-gray-200">History</a><a href="https://ankergames.net/genre/horror"
+                            class="text-gray-500 hover:text-gray-800 hover:underline dark:text-gray-400 dark:hover:text-gray-200">Horror</a><a href="https://ankergames.net/genre/indie"
+                            class="text-gray-500 hover:text-gray-800 hover:underline dark:text-gray-400 dark:hover:text-gray-200">Indie</a><a href="https://ankergames.net/genre/multiplayer"
+                            class="text-gray-500 hover:text-gray-800 hover:underline dark:text-gray-400 dark:hover:text-gray-200">Multiplayer</a><a href="https://ankergames.net/genre/nsfw"
+                            class="text-gray-500 hover:text-gray-800 hover:underline dark:text-gray-400 dark:hover:text-gray-200">NSFW</a><a href="https://ankergames.net/genre/open-world"
+                            class="text-gray-500 hover:text-gray-800 hover:underline dark:text-gray-400 dark:hover:text-gray-200">Open World</a><a href="https://ankergames.net/genre/puzzle"
+                            class="text-gray-500 hover:text-gray-800 hover:underline dark:text-gray-400 dark:hover:text-gray-200">Puzzle</a><a href="https://ankergames.net/genre/racing"
+                            class="text-gray-500 hover:text-gray-800 hover:underline dark:text-gray-400 dark:hover:text-gray-200">Racing</a><a href="https://ankergames.net/genre/rpg"
+                            class="text-gray-500 hover:text-gray-800 hover:underline dark:text-gray-400 dark:hover:text-gray-200">RPG</a><a href="https://ankergames.net/genre/simulation"
+                            class="text-gray-500 hover:text-gray-800 hover:underline dark:text-gray-400 dark:hover:text-gray-200">Simulation</a><a href="https://ankergames.net/genre/sports"
+                            class="text-gray-500 hover:text-gray-800 hover:underline dark:text-gray-400 dark:hover:text-gray-200">Sports</a><a href="https://ankergames.net/genre/survival"
+                            class="text-gray-500 hover:text-gray-800 hover:underline dark:text-gray-400 dark:hover:text-gray-200">Survival</a><a href="https://ankergames.net/genre/vr"
+                            class="text-gray-500 hover:text-gray-800 hover:underline dark:text-gray-400 dark:hover:text-gray-200">VR</a></nav><ul class="text-center mt-4"><li class="inline-block relative pr-8 last:pr-0 last-of-type:before:hidden before:absolute before:top-1/2 before:right-3 before:-translate-y-1/2 before:h-1 before:w-1 before:rounded-full before:bg-gray-400"><a class="inline-flex gap-x-2 text-sm text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200" href="https://ankergames.net/page/safety">Safety</a></li><li
+                            class="inline-block relative pr-8 last:pr-0 last-of-type:before:hidden before:absolute before:top-1/2 before:right-3 before:-translate-y-1/2 before:content-['/'] before:text-gray-300 dark:before:text-gray-600"><a class="inline-flex gap-x-2 text-sm text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                                href="https://ankergames.net/blog">
+                                Blog
+                            </a></li><li
+                            class="inline-block relative pr-8 last:pr-0 last-of-type:before:hidden before:absolute before:top-1/2 before:right-3 before:-translate-y-1/2 before:content-['/'] before:text-gray-300 dark:before:text-gray-600"><a class="inline-flex gap-x-2 text-sm text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                                href="/page/about-us">
+                                About
+                            </a></li><li
+                            class="inline-block relative pr-8 last:pr-0 last-of-type:before:hidden before:absolute before:top-1/2 before:right-3 before:-translate-y-1/2 before:content-['/'] before:text-gray-300 dark:before:text-gray-600"><a class="inline-flex gap-x-2 text-sm text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                                href="/faqs">
+                                FAQs
+                            </a></li><li
+                            class="inline-block relative pr-8 last:pr-0 last-of-type:before:hidden before:absolute before:top-1/2 before:right-3 before:-translate-y-1/2 before:content-['/'] before:text-gray-300 dark:before:text-gray-600"><a class="inline-flex gap-x-2 text-sm text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                                href="/page/privacy-policy">
+                                Privacy Policy
+                            </a></li><li
+                            class="inline-block relative pr-8 last:pr-0 last-of-type:before:hidden before:absolute before:top-1/2 before:right-3 before:-translate-y-1/2 before:content-['/'] before:text-gray-300 dark:before:text-gray-600"><a class="inline-flex gap-x-2 text-sm text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                                href="/page/dmca">
+                                DMCA
+                            </a></li><li
+                            class="inline-block relative pr-8 last:pr-0 last-of-type:before:hidden before:absolute before:top-1/2 before:right-3 before:-translate-y-1/2 before:content-['/'] before:text-gray-300 dark:before:text-gray-600"><a class="inline-flex gap-x-2 text-sm text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                                href="/page/cookie-policy">
+                                Cookie Policy
+                            </a></li><li
+                            class="inline-block relative pr-8 last:pr-0 last-of-type:before:hidden before:absolute before:top-1/2 before:right-3 before:-translate-y-1/2 before:content-['/'] before:text-gray-300 dark:before:text-gray-600"><a class="inline-flex gap-x-2 text-sm text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                                href="/contact">
+                                Contact
+                            </a></li><li
+                            class="inline-block relative pr-8 last:pr-0 last-of-type:before:hidden before:absolute before:top-1/2 before:right-3 before:-translate-y-1/2 before:content-['/'] before:text-gray-300 dark:before:text-gray-600"><a class="inline-flex gap-x-2 text-sm text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                                href="https://status.ankergames.net/">
+                                Status
+                            </a></li></ul><div class="flex flex-col items-center mt-4"><div class="flex items-center justify-center space-x-4"><div class="text-white inline-flex relative" x-data="{ open: false }"><button  class="inline-flex whitespace-nowrap gap-x-3 items-center justify-center px-6 py-3.5 text-sm rounded-base font-[450] disabled:opacity-50 disabled:pointer-events-none transition border bg-gray-50 text-gray-700 shadow-sm align-middle hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-[var(--primary-color)] transition-all text-sm dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:border-gray-700 dark:border-gray-800 dark:text-gray-300 dark:hover:text-white dark:focus:ring-offset-gray-800 dark:focus:ring-[var(--primary-color)] py-2.5! tracking-tighter rounded-full! font-normal! px-5! gap-x-3" type="button" @click.prevent="open = !open" aria-expanded="false"><img src="https://ankergames.net/static/img/flags/en.svg"
+                                class="h-4 w-auto rounded-full" alt="English flag" width="16" height="16"><span>English</span><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-4 h-4" stroke="currentColor" stroke-width="1.75"><use href="https://ankergames.net/static/sprite/sprite.svg#swap" xlink:href="https://ankergames.net/static/sprite/sprite.svg#swap"></use></svg></button><div class="z-10 absolute inset-x-0 w-52 bottom-full mb-3 bg-white p-3 left-0 rounded-lg shadow-lg border border-gray-100 text-sm dark:bg-gray-800 dark:border-gray-800"
+                            @click.outside="open = false" @keydown.escape.window="open = false" x-show="open"
+                            x-transition:enter="transition ease-out duration-200 transform"
+                            x-transition:enter-start="opacity-0 translate-y-2"
+                            x-transition:enter-end="opacity-100 translate-y-0"
+                            x-transition:leave="transition ease-out duration-200" x-transition:leave-start="opacity-100"
+                            x-transition:leave-end="opacity-0" style="display: none;"><div class="w-full max-w-xs"><ul class="grid grid-cols-1"><li><a rel="nofollow" href="https://ankergames.net/lang/en"
+                                                class="text-gray-500 dark:text-gray-300 hover:text-[var(--primary-color)] dark:hover:text-white dark:hover:bg-gray-700/50 py-2.5 px-3 rounded-lg flex gap-x-3 items-center tracking-tighter"><img src="https://ankergames.net/static/img/flags/en.svg"
+                                                    class="h-4 w-auto rounded-full" alt="English flag" width="16" height="16" loading="lazy"><span>English</span></a></li><li><a rel="nofollow" href="https://ankergames.net/lang/tr"
+                                                class="text-gray-500 dark:text-gray-300 hover:text-[var(--primary-color)] dark:hover:text-white dark:hover:bg-gray-700/50 py-2.5 px-3 rounded-lg flex gap-x-3 items-center tracking-tighter"><img src="https://ankergames.net/static/img/flags/tr.svg"
+                                                    class="h-4 w-auto rounded-full" alt="Türkçe flag" width="16" height="16" loading="lazy"><span>Türkçe</span></a></li><li><a rel="nofollow" href="https://ankergames.net/lang/de"
+                                                class="text-gray-500 dark:text-gray-300 hover:text-[var(--primary-color)] dark:hover:text-white dark:hover:bg-gray-700/50 py-2.5 px-3 rounded-lg flex gap-x-3 items-center tracking-tighter"><img src="https://ankergames.net/static/img/flags/de.svg"
+                                                    class="h-4 w-auto rounded-full" alt="Deutschland flag" width="16" height="16" loading="lazy"><span>Deutschland</span></a></li><li><a rel="nofollow" href="https://ankergames.net/lang/fr"
+                                                class="text-gray-500 dark:text-gray-300 hover:text-[var(--primary-color)] dark:hover:text-white dark:hover:bg-gray-700/50 py-2.5 px-3 rounded-lg flex gap-x-3 items-center tracking-tighter"><img src="https://ankergames.net/static/img/flags/fr.svg"
+                                                    class="h-4 w-auto rounded-full" alt="France flag" width="16" height="16" loading="lazy"><span>France</span></a></li><li><a rel="nofollow" href="https://ankergames.net/lang/ja"
+                                                class="text-gray-500 dark:text-gray-300 hover:text-[var(--primary-color)] dark:hover:text-white dark:hover:bg-gray-700/50 py-2.5 px-3 rounded-lg flex gap-x-3 items-center tracking-tighter"><img src="https://ankergames.net/static/img/flags/ja.svg"
+                                                    class="h-4 w-auto rounded-full" alt="日本 flag" width="16" height="16" loading="lazy"><span>日本</span></a></li><li><a rel="nofollow" href="https://ankergames.net/lang/ar"
+                                                class="text-gray-500 dark:text-gray-300 hover:text-[var(--primary-color)] dark:hover:text-white dark:hover:bg-gray-700/50 py-2.5 px-3 rounded-lg flex gap-x-3 items-center tracking-tighter"><img src="https://ankergames.net/static/img/flags/ar.svg"
+                                                    class="h-4 w-auto rounded-full" alt="عربي flag" width="16" height="16" loading="lazy"><span>عربي</span></a></li><li><a rel="nofollow" href="https://ankergames.net/lang/es"
+                                                class="text-gray-500 dark:text-gray-300 hover:text-[var(--primary-color)] dark:hover:text-white dark:hover:bg-gray-700/50 py-2.5 px-3 rounded-lg flex gap-x-3 items-center tracking-tighter"><img src="https://ankergames.net/static/img/flags/es.svg"
+                                                    class="h-4 w-auto rounded-full" alt="Español flag" width="16" height="16" loading="lazy"><span>Español</span></a></li><li><a rel="nofollow" href="https://ankergames.net/lang/pt"
+                                                class="text-gray-500 dark:text-gray-300 hover:text-[var(--primary-color)] dark:hover:text-white dark:hover:bg-gray-700/50 py-2.5 px-3 rounded-lg flex gap-x-3 items-center tracking-tighter"><img src="https://ankergames.net/static/img/flags/pt.svg"
+                                                    class="h-4 w-auto rounded-full" alt="Português flag" width="16" height="16" loading="lazy"><span>Português</span></a></li><li><a rel="nofollow" href="https://ankergames.net/lang/ru"
+                                                class="text-gray-500 dark:text-gray-300 hover:text-[var(--primary-color)] dark:hover:text-white dark:hover:bg-gray-700/50 py-2.5 px-3 rounded-lg flex gap-x-3 items-center tracking-tighter"><img src="https://ankergames.net/static/img/flags/ru.svg"
+                                                    class="h-4 w-auto rounded-full" alt="Русский flag" width="16" height="16" loading="lazy"><span>Русский</span></a></li><li><a rel="nofollow" href="https://ankergames.net/lang/zh"
+                                                class="text-gray-500 dark:text-gray-300 hover:text-[var(--primary-color)] dark:hover:text-white dark:hover:bg-gray-700/50 py-2.5 px-3 rounded-lg flex gap-x-3 items-center tracking-tighter"><img src="https://ankergames.net/static/img/flags/zh.svg"
+                                                    class="h-4 w-auto rounded-full" alt="中文 flag" width="16" height="16" loading="lazy"><span>中文</span></a></li></ul></div></div></div><div class="flex space-x-1"><a class="inline-flex justify-center items-center w-10 h-10 text-center text-gray-500 hover:bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] focus:ring-offset-2 focus:ring-offset-white transition dark:text-gray-500 dark:hover:text-gray-200 dark:hover:bg-gray-800 dark:focus:ring-offset-slate-900"
+                                href="https://www.youtube.com/@AnkerGames_net" target="_blank" rel="noopener noreferrer nofollow" aria-label="Subscribe on YouTube"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-4 h-4" fill="currentColor"><use href="https://ankergames.net/static/sprite/sprite.svg#youtube" xlink:href="https://ankergames.net/static/sprite/sprite.svg#youtube"></use></svg></a><a class="inline-flex justify-center items-center w-10 h-10 text-center text-gray-500 hover:bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] focus:ring-offset-2 focus:ring-offset-white transition dark:text-gray-500 dark:hover:text-gray-200 dark:hover:bg-gray-800 dark:focus:ring-offset-slate-900"
+                                href="https://www.tiktok.com/@ankergames" target="_blank" rel="noopener noreferrer nofollow" aria-label="Follow us on TikTok"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-4 h-4" fill="currentColor"><use href="https://ankergames.net/static/sprite/sprite.svg#tiktok" xlink:href="https://ankergames.net/static/sprite/sprite.svg#tiktok"></use></svg></a><a class="inline-flex justify-center items-center w-10 h-10 text-center text-gray-500 hover:bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] focus:ring-offset-2 focus:ring-offset-white transition dark:text-gray-500 dark:hover:text-gray-200 dark:hover:bg-gray-800 dark:focus:ring-offset-slate-900"
+                                href="https://www.reddit.com/r/Anker_Games_/" target="_blank" rel="noopener noreferrer nofollow" aria-label="Join us on Reddit"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-4 h-4" fill="currentColor"><use href="https://ankergames.net/static/sprite/sprite.svg#reddit" xlink:href="https://ankergames.net/static/sprite/sprite.svg#reddit"></use></svg></a><a class="inline-flex justify-center items-center w-10 h-10 text-center text-gray-500 hover:bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] focus:ring-offset-2 focus:ring-offset-white transition dark:text-gray-500 dark:hover:text-gray-200 dark:hover:bg-gray-800 dark:focus:ring-offset-slate-900"
+                                href="https://discord.gg/nnMnGzDbwg" target="_blank" rel="noopener noreferrer nofollow" aria-label="Join our Discord server"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor"
+    stroke-linecap="round" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"
+    class="w-4 h-4" fill="currentColor"><use href="https://ankergames.net/static/sprite/sprite.svg#discord" xlink:href="https://ankergames.net/static/sprite/sprite.svg#discord"></use></svg></a></div></div></div><p class="text-gray-500 dark:text-gray-400 text-sm mt-4"> © 2026 AnkerGames. All rights reserved.</p></div></footer><script type="module" src="https://ankergames.net/build/assets/app-634BNfI8.js" data-navigate-track="reload" data-cfasync="false"></script><script  data-navigate-once="true">window.livewireScriptConfig = {"csrf":"lq9DmhqYzwTxh0bF9DL3nO9BVMItHFPLZP98SS6V","uri":"https:\/\/ankergames.net\/livewire-be923db6\/update","moduleUrl":"https:\/\/ankergames.net\/livewire-be923db6","progressBar":"","nonce":""};</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4673e50397efeb3',t:'MTc5MTMxNjczMw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body></html>

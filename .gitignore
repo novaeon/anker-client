@@ -28,3 +28,12 @@ dist/
 Thumbs.db
 .idea/
 .vscode/
+
+# Tests / coverage
+.coverage
+htmlcov/
+junit.xml
+
+# Downloads in progress (when ANKERCLIENT_HOME points inside the repo)
+*.part
+*.part.json
