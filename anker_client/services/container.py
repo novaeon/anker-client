@@ -16,6 +16,8 @@ from anker_client.core.events import EventBus, SettingsChanged
 from anker_client.core.paths import AppPaths
 from anker_client.core.settings import SettingsStore
 from anker_client.core.tasks import TaskRunner
+from anker_client.services.achievements.service import AchievementService
+from anker_client.services.achievements.steam import SteamAchievementSchemas
 from anker_client.services.auth import AuthService
 from anker_client.services.catalog import CatalogService
 from anker_client.services.downloads.engine import HttpDownloader
@@ -54,6 +56,7 @@ class AppContext:
     installer: Installer
     library: LibraryService
     launcher: GameLauncher
+    achievements: AchievementService
     rate_limiter: RateLimiter
     resolver: LinkResolver
     downloads: DownloadManager
@@ -64,12 +67,14 @@ class AppContext:
         """Start long-lived services (call once the UI is ready to receive events)."""
         self.downloads.start()
         self.launcher.start()
+        self.achievements.start()
 
     def shutdown(self) -> None:
         """Stop everything in dependency order. Safe to call twice."""
         for name, action in (
             ("downloads", lambda: self.downloads.shutdown(timeout=10)),
             ("launcher", self.launcher.shutdown),
+            ("achievements", self.achievements.shutdown),
             ("auth", self.auth.save_session),
             ("runner", lambda: self.runner.shutdown(wait=False)),
             ("http", self.http.close),
@@ -100,6 +105,8 @@ def build_context(paths: AppPaths | None = None) -> AppContext:
     installer = Installer(settings, extractor, shortcuts)
     library = LibraryService(db, settings, events, shortcuts, catalog)
     launcher = GameLauncher(library, events, settings)
+    achievements = AchievementService(library, SteamAchievementSchemas(http, db), events, images=images,
+                                      runner=runner)
 
     rate_limiter = RateLimiter(settings.get().speed_limit_bps)
     resolver = LinkResolver(
@@ -144,6 +151,7 @@ def build_context(paths: AppPaths | None = None) -> AppContext:
         installer=installer,
         library=library,
         launcher=launcher,
+        achievements=achievements,
         rate_limiter=rate_limiter,
         resolver=resolver,
         downloads=downloads,

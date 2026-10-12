@@ -7,7 +7,11 @@ every click is emitted as ``action_requested(<action>)`` and the page runs the
 work, then reports back with ``set_size`` / ``set_busy`` / ``set_running``.
 
 Actions: play, stop, update, choose_exe, properties, open_folder, favorite,
-hide, shortcuts, redist, check_update, repair, store, uninstall.
+hide, shortcuts, redist, check_update, repair, store, uninstall, achievements.
+
+Achievements: the page calls ``set_achievements(None, loading=True)`` when it
+starts loading them and ``set_achievements(data)`` when done; the block is
+hidden for games without a readable Steam emulator (``data is None``).
 """
 
 from __future__ import annotations
@@ -28,10 +32,11 @@ from PyQt6.QtWidgets import (
 )
 
 from anker_client.core.formatting import format_bytes, format_playtime, format_relative_time
-from anker_client.core.models import InstalledGame
+from anker_client.core.models import GameAchievements, InstalledGame
 from anker_client.ui import icons
 from anker_client.ui.image_loader import ImageLoader
 from anker_client.ui.theme import palette
+from anker_client.ui.widgets.achievement_widgets import AchievementSummary
 from anker_client.ui.widgets.common import Badge, Divider, EmptyState, button, label, repolish
 from anker_client.ui.widgets.image_label import AsyncImage
 from anker_client.ui.widgets.library_common import ElidedLink, IconTinter
@@ -182,6 +187,13 @@ class LibraryDetailPanel(QFrame):
         folder_box.addWidget(self.folder_link)
         col.addLayout(folder_box)
 
+        self.achievements = AchievementSummary(self._loader)
+        self.achievements.view_requested.connect(lambda: self._emit("achievements"))
+        self._achievements_divider = Divider()
+        col.addWidget(self._achievements_divider)
+        col.addWidget(self.achievements)
+        self.set_achievements(None)
+
         col.addWidget(Divider())
 
         # management actions (2-column list)
@@ -250,6 +262,15 @@ class LibraryDetailPanel(QFrame):
             self.poster.set_image(game.cover_url, game.title)
         self._stack.setCurrentIndex(1)
         self._render()
+
+    def set_achievements(self, data: GameAchievements | None, *, loading: bool = False) -> None:
+        if loading:
+            self.achievements.set_loading()
+        else:
+            self.achievements.set_data(data)
+        visible = loading or data is not None
+        self.achievements.setVisible(visible)
+        self._achievements_divider.setVisible(visible)
 
     def set_running(self, running: bool) -> None:
         if running != self._running:

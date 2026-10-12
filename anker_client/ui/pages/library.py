@@ -39,6 +39,10 @@ is in flight are re-applied on top of its (possibly older) snapshot. Grid and
 table are updated in place when the visible set is unchanged (no
 scroll/selection resets). ``refresh()`` (F5) rescans the library folders.
 Every service call goes through ``run_async``.
+
+Achievements: selecting a game loads ``achievements.achievements_for`` into the
+panel (cached per game; reloaded when ``achievements_changed`` names it, so the
+count updates live while it runs); "View all" opens the achievements window.
 """
 
 from __future__ import annotations
@@ -68,12 +72,13 @@ from PyQt6.QtWidgets import (
 
 from anker_client.core.errors import ExecutableNotSetError
 from anker_client.core.formatting import format_bytes, pluralize
-from anker_client.core.models import GameDetails, GameUpdate, InstalledGame
+from anker_client.core.models import GameAchievements, GameDetails, GameUpdate, InstalledGame
 from anker_client.core.tasks import CancelToken, TaskHandle
 from anker_client.services.container import AppContext
 from anker_client.ui import icons
 from anker_client.ui.async_ import error_text, run_async
 from anker_client.ui.bridge import QtEventBridge
+from anker_client.ui.dialogs.achievements import AchievementsDialog
 from anker_client.ui.dialogs.game_dialogs import GamePropertiesDialog, ImportArchiveDialog, ImportFoldersDialog
 from anker_client.ui.image_loader import ImageLoader
 from anker_client.ui.navigator import Navigator
@@ -180,6 +185,9 @@ class LibraryPage(QWidget):
         self._load_handle: TaskHandle[Any] | None = None
         self._size_handle: TaskHandle[Any] | None = None
         self._size_for = ""
+        self._achievements_handle: TaskHandle[Any] | None = None
+        self._achievements_cache: dict[str, GameAchievements | None] = {}
+        self._achievement_dialogs: list[AchievementsDialog] = []
         self._size_attempted: set[str] = set()
         self._tasks: dict[str, TaskHandle[Any]] = {}
         self._busy_text: dict[str, str] = {}  # "<action>:<install id>" → panel caption while it runs
@@ -395,6 +403,7 @@ class LibraryPage(QWidget):
         connect(bridge.game_uninstalled, self._on_game_uninstalled)
         connect(bridge.game_launched, self._on_game_launched)
         connect(bridge.game_exited, self._on_game_exited)
+        connect(bridge.achievements_changed, self._on_achievements_changed)
         connect(bridge.updates_found, self._on_updates_found)
         connect(bridge.settings_changed, self._on_settings_changed)
 
@@ -438,9 +447,11 @@ class LibraryPage(QWidget):
         self._shut_down = True
         self._connections.disconnect_all()
         self._reload_timer.stop()
-        for handle in (self._load_handle, self._size_handle, *self._tasks.values()):
+        for handle in (self._load_handle, self._size_handle, self._achievements_handle, *self._tasks.values()):
             if handle is not None:
                 handle.cancel()
+        for dialog in list(self._achievement_dialogs):
+            dialog.close()
         self._tasks.clear()
         self._busy_text.clear()
 
@@ -619,6 +630,7 @@ class LibraryPage(QWidget):
             if game is not None:
                 if changed:
                     self._start_size(game)
+                    self._load_achievements(install_id)
                 self._restore_busy(install_id)
 
     def _restore_busy(self, install_id: str) -> None:
@@ -864,6 +876,57 @@ class LibraryPage(QWidget):
     def _game(self, install_id: str) -> InstalledGame | None:
         return self._games.get(install_id)
 
+    # ------------------------------------------------------------------ achievements
+    def _load_achievements(self, install_id: str) -> None:
+        if self._achievements_handle is not None:
+            self._achievements_handle.cancel()
+            self._achievements_handle = None
+        if install_id in self._achievements_cache:
+            self._panel.set_achievements(self._achievements_cache[install_id])
+        else:
+            self._panel.set_achievements(None, loading=True)
+        if self._shut_down:
+            return
+        self._achievements_handle = run_async(
+            self, self._ctx.runner, self._ctx.achievements.achievements_for, install_id,
+            on_result=lambda data, i=install_id: self._on_achievements(i, data),
+            on_error=lambda exc, i=install_id: self._on_achievements_failed(i, exc),
+        )
+
+    def _on_achievements(self, install_id: str, data: GameAchievements | None) -> None:
+        self._achievements_cache[install_id] = data
+        if self._panel.install_id == install_id:
+            self._panel.set_achievements(data)
+
+    def _on_achievements_failed(self, install_id: str, exc: BaseException) -> None:
+        log.info("Achievements of %s could not be loaded: %s", install_id, exc)
+        if self._panel.install_id == install_id:
+            self._panel.set_achievements(self._achievements_cache.get(install_id))
+
+    def _on_achievements_changed(self, event: Any) -> None:
+        ids = set(getattr(event, "install_ids", ()) or ())
+        apps = set(getattr(event, "app_ids", ()) or ())
+        ids |= {i for i, d in self._achievements_cache.items() if d is not None and d.app_id in apps}
+        for install_id in ids:
+            self._achievements_cache.pop(install_id, None)
+        if self._panel.install_id in ids:
+            self._load_achievements(self._panel.install_id)
+
+    def _open_achievements(self, install_id: str) -> None:
+        for dialog in self._achievement_dialogs:
+            if dialog.install_id == install_id:
+                dialog.raise_()
+                dialog.activateWindow()
+                return
+        game = self._games.get(install_id)
+        dialog = AchievementsDialog(self._ctx, self._bridge, self._loader, install_id,
+                                    game.title if game is not None else "", parent=self.window())
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
+        self._achievement_dialogs.append(dialog)
+        dialog.finished.connect(lambda _r, d=dialog: self._achievement_dialogs.remove(d)
+                                if d in self._achievement_dialogs else None)
+        dialog.show()
+
     def _on_panel_action(self, action: str) -> None:
         install_id = self._panel.install_id
         if install_id:
@@ -885,6 +948,7 @@ class LibraryPage(QWidget):
             "repair": self._repair,
             "store": self._open_store_page,
             "uninstall": self._uninstall,
+            "achievements": self._open_achievements,
         }
         handler = handlers.get(action)
         if handler is not None:

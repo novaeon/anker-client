@@ -95,6 +95,16 @@ _MIGRATIONS: list[str] = [
         added_at  TEXT NOT NULL
     );
     """,
+    # 2 — Steam achievement lists (names, icons, rarity) per app and language; [] = no achievements
+    """
+    CREATE TABLE IF NOT EXISTS achievement_schemas (
+        app_id     INTEGER NOT NULL,
+        language   TEXT NOT NULL,
+        data       TEXT NOT NULL,
+        fetched_at TEXT NOT NULL,
+        PRIMARY KEY (app_id, language)
+    );
+    """,
 ]
 
 

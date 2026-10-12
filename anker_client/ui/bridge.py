@@ -29,6 +29,9 @@ class QtEventBridge(QObject):
     game_uninstalled = pyqtSignal(object)  # events.GameUninstalled
     game_launched = pyqtSignal(object)  # events.GameLaunched
     game_exited = pyqtSignal(object)  # events.GameExited
+    # achievements
+    achievement_unlocked = pyqtSignal(object)  # events.AchievementUnlocked
+    achievements_changed = pyqtSignal(object)  # events.AchievementsChanged
 
     # catalog / updates
     catalog_sync_progress = pyqtSignal(int, object)  # pages done, total|None
@@ -73,6 +76,10 @@ class QtEventBridge(QObject):
                 self.game_launched.emit(e)
             case ev.GameExited():
                 self.game_exited.emit(e)
+            case ev.AchievementUnlocked():
+                self.achievement_unlocked.emit(e)
+            case ev.AchievementsChanged():
+                self.achievements_changed.emit(e)
             case ev.CatalogSyncProgress(pages_done=done, pages_total=total):
                 self.catalog_sync_progress.emit(done, total)
             case ev.CatalogUpdated():

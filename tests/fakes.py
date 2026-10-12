@@ -23,11 +23,13 @@ from anker_client.core import events as ev
 from anker_client.core.db import Database
 from anker_client.core.errors import ExecutableNotSetError, LoginFailedError, NotFoundError
 from anker_client.core.models import (
+    Achievement,
     AppRelease,
     DownloadJob,
     DownloadKind,
     DownloadOption,
     ErrorKind,
+    GameAchievements,
     GameDetails,
     GameSummary,
     GameUpdate,
@@ -268,6 +270,8 @@ class FakeImageCache:
             from PyQt6.QtGui import QColor, QFont, QImage, QLinearGradient, QPainter
 
             wide = "/hero/" in url or "/shot/" in url
+            if "/achievements/" in url:  # square Steam-style achievement icon
+                return self._achievement_icon(url, path)
             w, h = (960, 540) if wide else (300, 450)
             digest = hashlib.sha1(url.encode()).digest()
             c1 = QColor.fromHsv(digest[0] * 360 // 256, 150, 200)
@@ -286,6 +290,30 @@ class FakeImageCache:
             p.drawText(QRect(16, 16, w - 32, h - 32), int(Qt.AlignmentFlag.AlignCenter | Qt.TextFlag.TextWordWrap), name)
             p.end()
             image.save(str(path), "PNG")
+        return path
+
+    @staticmethod
+    def _achievement_icon(url: str, path: Path) -> Path:
+        from PyQt6.QtCore import QRect, Qt
+        from PyQt6.QtGui import QColor, QFont, QImage, QLinearGradient, QPainter
+
+        digest = hashlib.sha1(url.replace("_gray", "").encode()).digest()
+        hue = digest[0] * 360 // 256
+        gray = "_gray" in url
+        image = QImage(128, 128, QImage.Format.Format_RGB32)
+        p = QPainter(image)
+        grad = QLinearGradient(0, 0, 128, 128)
+        grad.setColorAt(0, QColor.fromHsv(hue, 0 if gray else 170, 150 if gray else 235))
+        grad.setColorAt(1, QColor.fromHsv((hue + 50) % 360, 0 if gray else 220, 60 if gray else 110))
+        p.fillRect(0, 0, 128, 128, grad)
+        p.setPen(QColor(255, 255, 255, 120 if gray else 235))
+        font = QFont("Segoe UI", 44)
+        font.setBold(True)
+        p.setFont(font)
+        initials = "".join(w[0] for w in url.rsplit("/", 1)[-1].split(".", maxsplit=1)[0].replace("_gray", "").split("-")[:2])
+        p.drawText(QRect(0, 0, 128, 128), int(Qt.AlignmentFlag.AlignCenter), initials.upper())
+        p.end()
+        image.save(str(path), "PNG")
         return path
 
     def import_file(self, url: str, source: Path) -> Path | None:
@@ -681,6 +709,81 @@ class _Null:
         return lambda *a, **k: None
 
 
+_ACHIEVEMENTS = [
+    # api name, display name, description, global %, hidden
+    ("FIRST_STEPS", "First Steps", "Finish the prologue.", 92.4, False),
+    ("COLLECTOR", "Collector", "Find 50 hidden relics.", 41.7, False),
+    ("NO_DAMAGE", "Untouchable", "Defeat a boss without taking damage.", 18.2, False),
+    ("SPEEDRUN", "Against the Clock", "Finish the game in under five hours.", 3.6, False),
+    ("TRUE_ENDING", "The Last Light", "See the true ending.", 6.1, True),
+    ("ALL_SKILLS", "Master of All", "Unlock every skill.", 22.9, False),
+    ("FRIENDS", "Better Together", "Complete 10 co-op missions.", 35.0, False),
+    ("SECRET_ROOM", "Behind the Wall", "Discover the secret room.", 12.5, True),
+    ("PERFECTIONIST", "Perfectionist", "Unlock every other achievement.", 1.2, False),
+]
+
+
+class FakeAchievements:
+    """Steam-style achievements for two of the fake games; ``unlock`` simulates a game unlocking one."""
+
+    ICON_BASE = "https://cdn.example/achievements"
+
+    def __init__(self, library: FakeLibrary, events: ev.EventBus) -> None:
+        self._library = library
+        self._events = events
+        ids = [g.install_id for g in library.games()]
+        self._apps = {ids[0]: 1000001, ids[1]: 1000002} if len(ids) > 1 else {}
+        now = int(time.time())
+        self._unlocked: dict[str, dict[str, int]] = {
+            ids[0]: {"FIRST_STEPS": now - 86400 * 30, "COLLECTOR": now - 86400 * 9, "NO_DAMAGE": now - 86400 * 2,
+                     "SECRET_ROOM": now - 3600 * 5, "SPEEDRUN": now - 600} if ids else {},
+        }
+        if len(ids) > 1:
+            self._unlocked[ids[1]] = {}
+
+    def start(self) -> None:
+        pass
+
+    def shutdown(self) -> None:
+        pass
+
+    def app_id_for(self, install_id: str) -> int | None:
+        return self._apps.get(install_id)
+
+    def achievements_for(self, install_id: str, *, refresh: bool = False,
+                         token: CancelToken | None = None) -> GameAchievements | None:
+        app_id = self._apps.get(install_id)
+        game = self._library.get(install_id)
+        if app_id is None or game is None:
+            return None
+        unlocked = self._unlocked.get(install_id, {})
+        items = []
+        for api, name, desc, pct, hidden in _ACHIEVEMENTS:
+            slug = name.lower().replace(" ", "-")
+            items.append(Achievement(
+                api_name=api, name=name, description=desc, hidden=hidden, global_percent=pct,
+                icon_url=f"{self.ICON_BASE}/{app_id}/{slug}.png",
+                icon_gray_url=f"{self.ICON_BASE}/{app_id}/{slug}_gray.png",
+                unlocked=api in unlocked, unlocked_at=unlocked.get(api, 0),
+                progress=31 if api == "COLLECTOR" and api not in unlocked else None,
+                max_progress=50 if api == "COLLECTOR" and api not in unlocked else None,
+            ))
+        return GameAchievements(app_id=app_id, title=game.title, install_id=install_id, emulators=["RUNE"],
+                                achievements=items, schema_available=True)
+
+    def unlock(self, install_id: str, api_name: str) -> ev.AchievementUnlocked:
+        """Mark one achievement unlocked and publish the events the real watcher would."""
+        self._unlocked.setdefault(install_id, {})[api_name] = int(time.time())
+        data = self.achievements_for(install_id)
+        assert data is not None and data.get(api_name) is not None
+        event = ev.AchievementUnlocked(app_id=data.app_id, achievement=data.get(api_name), game_title=data.title,
+                                       install_id=install_id, unlocked_count=data.unlocked_count, total=data.total)
+        self._events.publish(event)
+        self._events.publish(ev.AchievementsChanged(app_ids=frozenset({data.app_id}),
+                                                    install_ids=frozenset({install_id})))
+        return event
+
+
 class FakeContext:
     def __init__(self, home: Path) -> None:
         home = Path(home)
@@ -702,6 +805,7 @@ class FakeContext:
         self.installer = _Null()
         self.library = FakeLibrary(self.events, home / "Games", self.client)
         self.launcher = FakeLauncher(self.library, self.events)
+        self.achievements = FakeAchievements(self.library, self.events)
         self.rate_limiter = _Null()
         self.resolver = _Null()
         self.downloads = FakeDownloads(self.events, self.client, home / "Games")

@@ -1,0 +1,71 @@
+{
+ "response": {
+  "achievements": [
+   {
+    "internal_name": "FUNERAL_CAMPAIGN",
+    "localized_name": "Laid To Dress",
+    "localized_desc": "Complete all the dresses for the Duke's funeral.",
+    "icon": "2d88df79235cdf25d054c0c29869d83ed7f90d84.jpg",
+    "icon_gray": "3f46bc033ea1ca9ea02f0c394cab3424fd68bb0f.jpg",
+    "hidden": true,
+    "player_percent_unlocked": "81.5",
+    "internal_key": 266,
+    "groupid": 0,
+    "archived": false,
+    "progress_type": 0
+   },
+   {
+    "internal_name": "MAX_QUALITY",
+    "localized_name": "99 Problems But A Stitch Ain't One",
+    "localized_desc": "Achieve 100% quality on a dress",
+    "icon": "1873eb67fa0d678274b8f2dbcdde622e5b415b28.jpg",
+    "icon_gray": "4c1fb2baeb2e69e1fa8c849bf08a7b3be0a9c7a3.jpg",
+    "hidden": false,
+    "player_percent_unlocked": "77.7",
+    "internal_key": 287,
+    "groupid": 0,
+    "archived": false,
+    "progress_type": 0
+   },
+   {
+    "internal_name": "BERTY_UNLOCK",
+    "localized_name": "You’ve Got Mail",
+    "localized_desc": "Complete Dorothy's first dress, and acquire Berty.",
+    "icon": "51dd62fd5910fbd6cc12daf154661ad3adc8dca0.jpg",
+    "icon_gray": "a119bccc81907f028bf874a44ec98372a1b1b282.jpg",
+    "hidden": true,
+    "player_percent_unlocked": "58.6",
+    "internal_key": 267,
+    "groupid": 0,
+    "archived": false,
+    "progress_type": 0
+   },
+   {
+    "internal_name": "TRIM",
+    "localized_name": "Trim and Proper",
+    "localized_desc": "Use more than 50m of trim on a single dress.",
+    "icon": "ecce3df8738ab823c348c180c50f62c7d8563150.jpg",
+    "icon_gray": "6dec8bfca8f7857624ea1dc75f5392ca2286cc13.jpg",
+    "hidden": false,
+    "player_percent_unlocked": "3.1",
+    "internal_key": 281,
+    "groupid": 0,
+    "archived": false,
+    "progress_type": 0
+   },
+   {
+    "internal_name": "SPORT_CAMPAIGN",
+    "localized_name": "Style Goals",
+    "localized_desc": "Complete all the dresses for the Woman's Sporting Day Contest.",
+    "icon": "25881cf0d5e0fe9cb6393635ce1372c8c3ac4d1c.jpg",
+    "icon_gray": "8c04cfa6a9dacc4d5c62cb38fced0655c2abfda0.jpg",
+    "hidden": true,
+    "player_percent_unlocked": "49.3",
+    "internal_key": 268,
+    "groupid": 0,
+    "archived": false,
+    "progress_type": 0
+   }
+  ]
+ }
+}

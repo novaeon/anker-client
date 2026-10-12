@@ -4,6 +4,16 @@ All notable changes to AnkerClient are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] — 2026-10-13
+
+### Added
+- **Achievements**: Steam-style pop-ups with a sound when a game unlocks an
+  achievement (a gold card for rare ones), for games that use
+  the Goldberg/gbe_fork, RUNE, CODEX or OnlineFix Steam emulators. Names,
+  descriptions, icons and rarity come from Steam without an API key. The Library
+  shows each game's progress and a full achievements list. Pop-ups, sound and
+  screen corner are set in Settings → General → Achievements.
+
 ## [1.0.0] — 2026-10-07
 
 A ground-up rewrite. Settings, remembered sign-in and games installed by 0.x

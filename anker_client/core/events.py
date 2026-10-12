@@ -18,6 +18,7 @@ from dataclasses import dataclass, field
 from typing import Any, TypeVar
 
 from anker_client.core.models import (
+    Achievement,
     AppRelease,
     DownloadJob,
     GameUpdate,
@@ -92,6 +93,30 @@ class GameExited(Event):
     install_id: str
     title: str
     session_seconds: int
+
+
+# --- achievements ---------------------------------------------------------------
+
+
+@dataclass(frozen=True, slots=True)
+class AchievementUnlocked(Event):
+    """A Steam emulator recorded a new unlock while AnkerClient was running (→ Steam-style pop-up)."""
+
+    app_id: int
+    achievement: Achievement
+    game_title: str = ""
+    install_id: str = ""  # "" when the game is not in the library
+    unlocked_count: int = 0  # after this unlock; 0/0 when Steam's list is unknown
+    total: int = 0
+    preview: bool = False  # "Show a test pop-up" in Settings: shown even when pop-ups are off
+
+
+@dataclass(frozen=True, slots=True)
+class AchievementsChanged(Event):
+    """Unlock state of these apps changed; re-read ``AchievementService.achievements_for``."""
+
+    app_ids: frozenset[int] = frozenset()
+    install_ids: frozenset[str] = frozenset()
 
 
 # --- catalog / updates ----------------------------------------------------------

@@ -527,3 +527,92 @@ class ArchiveEntry(_Serializable):
     path: str
     size: int = 0
     is_dir: bool = False
+
+
+# ---------------------------------------------------------------------------
+# achievements
+# ---------------------------------------------------------------------------
+
+#: Steam calls an achievement "rare" when fewer than this share of players have it.
+RARE_ACHIEVEMENT_PERCENT = 10.0
+
+
+def prettify_api_name(api_name: str) -> str:
+    """``ACH_WIN_10_GAMES`` / ``buildHouse`` → ``Win 10 Games`` / ``Build House`` (no Steam name known).
+
+    Names that already read like text (spaces and lower case, as some games use) are kept.
+    """
+    text = api_name.strip()
+    if " " in text and any(c.islower() for c in text):
+        return text
+    stripped = re.sub(r"^(?:NEW_ACHIEVEMENT|ACHIEVEMENT|ACH|STEAM)[_\s-]+", "", text, flags=re.IGNORECASE)
+    if any(c.isalpha() for c in stripped):
+        text = stripped
+    all_caps = not any(c.islower() for c in text)
+    text = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", text)
+    text = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1 \2", text)  # "DLCItems" → "DLC Items"
+    words = [w for w in re.split(r"[_\s-]+", text) if w]
+    # Keep short acronyms ("DLC") in mixed-case names; SHOUTED_SNAKE_CASE is all capitalised.
+    return " ".join(w if (not all_caps and w.isupper() and len(w) <= 3) else w.capitalize() for w in words) or api_name
+
+
+@dataclass(slots=True)
+class Achievement(_Serializable):
+    """One achievement: Steam's definition merged with the unlock state written by a Steam emulator."""
+
+    api_name: str  # Steam's internal name, also the key emulators store unlocks under
+    name: str = ""  # display name ("" = unknown: Steam's list could not be fetched)
+    description: str = ""
+    hidden: bool = False
+    icon_url: str = ""  # colour icon (unlocked)
+    icon_gray_url: str = ""  # greyed-out icon (locked)
+    global_percent: float | None = None  # share of Steam players who have it
+    unlocked: bool = False
+    unlocked_at: int = 0  # unix seconds; 0 = unknown
+    progress: int | None = None  # current / max for progress-based achievements
+    max_progress: int | None = None
+
+    @property
+    def display_name(self) -> str:
+        return self.name or prettify_api_name(self.api_name)
+
+    @property
+    def rare(self) -> bool:
+        return self.global_percent is not None and self.global_percent < RARE_ACHIEVEMENT_PERCENT
+
+    @property
+    def has_progress(self) -> bool:
+        return bool(self.max_progress) and self.max_progress > 1 and not self.unlocked
+
+
+@dataclass(slots=True)
+class GameAchievements(_Serializable):
+    """All achievements of one Steam app, as far as the local emulator files and Steam know them."""
+
+    app_id: int
+    title: str = ""
+    install_id: str = ""  # "" when the game is not in the library
+    emulators: list[str] = field(default_factory=list)  # labels of the emulators whose files were read
+    achievements: list[Achievement] = field(default_factory=list)
+    schema_available: bool = False  # names, icons and rarity came from Steam
+
+    @property
+    def total(self) -> int:
+        return len(self.achievements)
+
+    @property
+    def unlocked_count(self) -> int:
+        return sum(1 for a in self.achievements if a.unlocked)
+
+    @property
+    def percent(self) -> int:
+        return round(100 * self.unlocked_count / self.total) if self.total else 0
+
+    def get(self, api_name: str) -> Achievement | None:
+        return next((a for a in self.achievements if a.api_name == api_name), None)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> GameAchievements:
+        data = dict(data or {})
+        data["achievements"] = [Achievement.from_dict(a) for a in data.get("achievements") or []]
+        return cls(**_filter_kwargs(cls, data))

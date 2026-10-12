@@ -38,6 +38,18 @@ def _isolated_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     return home
 
 
+@pytest.fixture(autouse=True)
+def played_sounds(monkeypatch: pytest.MonkeyPatch) -> list[Path]:
+    """Never play audio from tests; record which achievement sounds would have played."""
+    played: list[Path] = []
+    try:
+        from anker_client.ui import achievement_sound
+    except ImportError:  # pragma: no cover - Qt-free environments
+        return played
+    monkeypatch.setattr(achievement_sound, "_play_file", played.append)
+    return played
+
+
 @pytest.fixture
 def site_fixture() -> callable:
     """``site_fixture("game_hollow_knight.html")`` → file text."""
