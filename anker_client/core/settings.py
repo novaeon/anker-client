@@ -28,6 +28,9 @@ CLOSE_ASK = "ask"
 CLOSE_TRAY = "tray"
 CLOSE_QUIT = "quit"
 
+#: Screen corners an achievement pop-up can appear in (like Steam's notification position setting).
+ACHIEVEMENT_POSITIONS = ("bottom_right", "bottom_left", "top_right", "top_left")
+
 
 def default_library_dir() -> str:
     # The legacy client defaulted to C:\Games; keep it so existing installs are found.
@@ -78,6 +81,9 @@ class Settings:
     start_minimized: bool = False
     launch_on_startup: bool = False
     notifications_enabled: bool = True
+    achievement_popups: bool = True  # Steam-style pop-up when a game unlocks an achievement
+    achievement_sound: bool = True
+    achievement_position: str = "bottom_right"  # bottom_right | bottom_left | top_right | top_left
     remember_login: bool = True
     log_level: str = "INFO"
     first_run_completed: bool = False
@@ -129,6 +135,8 @@ class Settings:
             s.store_sort = SortOrder.NEWEST.value
         if s.log_level not in ("DEBUG", "INFO", "WARNING", "ERROR"):
             s.log_level = "INFO"
+        if s.achievement_position not in ACHIEVEMENT_POSITIONS:
+            s.achievement_position = "bottom_right"
         s.schema_version = SCHEMA_VERSION
         return s
 

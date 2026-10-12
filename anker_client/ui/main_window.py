@@ -30,6 +30,8 @@ Layout (docs/ARCHITECTURE.md §UI → Shell)::
   hidden, ``tray=True`` and notifications are enabled); ``GameInstalled`` with
   ``needs_executable`` offers "Choose executable"; ``AppUpdateAvailable``
   offers "Download" (release page) and shows a header chip.
+* ``AchievementUnlocked`` events become Steam-style pop-ups with a sound
+  (``achievement_notifier``; on screen even while the window is hidden).
 * Close: ``settings.close_behavior`` — ask (dialog with "Remember my choice"),
   tray (hide; minimise when there is no tray) or quit. Quitting while
   downloads run asks first ("Downloads will pause and resume next time").
@@ -79,6 +81,8 @@ from anker_client.core.settings import CLOSE_ASK, CLOSE_QUIT, CLOSE_TRAY
 from anker_client.core.tasks import CancelToken
 from anker_client.services.container import AppContext
 from anker_client.ui import icons, shell_dialogs
+from anker_client.ui.achievement_notifier import AchievementNotifier
+from anker_client.ui.achievement_sound import AchievementSound
 from anker_client.ui.async_ import error_text, run_async
 from anker_client.ui.bridge import QtEventBridge
 from anker_client.ui.image_loader import ImageLoader
@@ -168,6 +172,9 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(MIN_SIZE)
         self._build_ui()
         self._toasts = ToastManager(self._content)
+        self.achievement_notifier = AchievementNotifier(
+            ctx, bridge, self._loader, AchievementSound(), self
+        )
         self._tray = TrayController(ctx, app_icon(), self, available=tray_available)
         self._tray.open_requested.connect(self.show_and_raise)
         self._tray.quit_requested.connect(self.request_quit)
@@ -881,6 +888,7 @@ class MainWindow(QMainWindow):
         self._summary_timer.stop()
         self._library_timer.stop()
         self._toasts.clear()
+        self.achievement_notifier.shutdown()
         for page in list(self._pages.values()):
             call_page(page, "shutdown")
         self._surface.set_paused(True)

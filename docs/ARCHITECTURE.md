@@ -18,6 +18,7 @@ anker_client/
   services/               business logic (Qt-free): catalog, images, auth, library, launcher, updates,
     downloads/            ratelimit, engine (resumable HTTP), resolver (ticket → file URL), manager (queue)
     install/              sevenzip, extractor, executables, diskspace, shortcuts, installer
+    achievements/         Steam-emulator unlock files (formats, sources), Steam lists (steam), watcher (service)
     system/               autostart
     container.py          composition root → AppContext
   ui/                     PyQt6 only here
@@ -44,7 +45,8 @@ them. Pages never import each other; they talk through `Navigator`.
 * `TaskRunner` (8 workers): short/medium jobs. UI uses `ui.async_.run_async`.
   Every callable takes a keyword `token: CancelToken`.
 * Dedicated threads: download scheduler + one thread per active job, segment
-  connection threads inside the engine, the launcher's process monitor.
+  connection threads inside the engine, the launcher's process monitor, the
+  achievement watcher.
 * Services publish immutable events on the `EventBus` from any thread; the UI
   listens via `QtEventBridge` signals (always delivered on the GUI thread).
 * Shared state in services is guarded by locks; getters return copies.
@@ -62,7 +64,7 @@ and surfaced as a generic message.
 | What | Where |
 |---|---|
 | Settings | `%APPDATA%\AnkerClient\config.json` (`core.settings`) — migrated from legacy `settings.json` |
-| SQLite (catalog, details cache, installs user data, play sessions, jobs, wishlist) | `%APPDATA%\AnkerClient\anker.db` |
+| SQLite (catalog, details cache, installs user data, play sessions, jobs, wishlist, Steam achievement lists) | `%APPDATA%\AnkerClient\anker.db` |
 | Session cookies (DPAPI-encrypted) | `%APPDATA%\AnkerClient\session.bin` |
 | Credentials | Windows Credential Manager via `keyring` (service `AnkerClient`) |
 | Image cache | `%LOCALAPPDATA%\AnkerClient\Cache\images` |
@@ -113,6 +115,35 @@ retry/backoff rules are documented in `services/downloads/manager.py`.
 Download options: FULL ("Direct…"), PATCH ("Update Only From V a To V b") and
 ADDON ("Language Pack", "Launcher") — PATCH/ADDON extract over an existing
 install.
+
+## Achievements
+
+Cracked games ship a Steam emulator that records unlocks in its own files;
+`services/achievements` reads them (details in each module's docstring):
+
+* `formats` — pure parsers: Goldberg/gbe_fork `achievements.json`, CODEX/RUNE
+  `achievements.ini`, OnlineFix `Stats/Achievements.ini`, plus gbe_fork's
+  shipped schema `steam_settings/achievements.json`.
+* `sources` — save roots (`%APPDATA%\GSE Saves`, `%APPDATA%\Goldberg SteamEmu
+  Saves`, `%PUBLIC%\Documents\Steam\RUNE|CODEX`, `%APPDATA%\Steam\CODEX`,
+  `%PUBLIC%\Documents\OnlineFix`), and `detect_game(folder)`: the emulator a
+  game ships and its Steam app id (`OnlineFix.ini` RealAppId, `steam_emu.ini`
+  AppId, `steam_settings`, `steam_appid.txt`; 480 never counts), including
+  gbe_fork's custom save paths.
+* `steam` — names, descriptions (also of hidden achievements), icons and rarity
+  from `IPlayerService/GetGameAchievements` (no API key), cached for a week in
+  `achievement_schemas`.
+* `service.AchievementService` — a watcher thread polls the unlock files (stat
+  only; parse on change). A silent baseline at start, then `AchievementUnlocked`
+  per new unlock (oldest first, at most 10 per poll) and `AchievementsChanged`.
+  `achievements_for(install_id)` merges Steam's list with every emulator's
+  file for the Library. `GameLaunched` prefetches the list and icons.
+
+UI: `ui/achievement_notifier.py` turns `AchievementUnlocked` into Steam-style
+pop-ups (`ui/widgets/achievement_toast.py`, deliberately Steam-coloured rather
+than themed) with a sound (`ui/achievement_sound.py` plays `resources/achievement.wav`
+for every pop-up); the Library detail panel shows a
+summary and "View all" opens `ui/dialogs/achievements.py`.
 
 ## Startup sequence (`app.main`)
 
@@ -230,7 +261,9 @@ Library page
   genres; actions: Properties, Open folder, Favorite, Hide, Create shortcuts,
   Install prerequisites (when `has_redist and not redist_installed`), Check for
   update, Repair (reinstall), Store page, Uninstall (danger, confirmation names
-  the game and its size).
+  the game and its size). Achievements block (games with a readable Steam
+  emulator): "5 / 9" + progress bar, latest unlocked icons, "View all" →
+  achievements window.
 * Empty state: "Your library is empty" + "Browse the store" + "Import existing games".
 
 Downloads page
@@ -248,7 +281,8 @@ Settings page
 * Section list left, scrollable form right; changes apply immediately via
   `ctx.settings.update(...)` (no Apply button).
 * General: close behaviour, start minimized, launch with Windows
-  (`system.autostart`), notifications, app update checks.
+  (`system.autostart`), notifications, achievement pop-ups (on/off, sound,
+  screen corner, Preview / Preview rare), app update checks.
 * Library: library folders (add/remove/default), shortcut toggles, minimize on
   game launch, show hidden games, game update checks + interval.
 * Downloads: download folder, concurrent downloads, connections per download,
@@ -270,6 +304,8 @@ Dialogs
   `auth.login_with_cookies`); links to register / forgot password on the
   website; inline errors; busy state.
 * Verification: see `ui/dialogs/verification.py` and "Site protocol" above.
+* Achievements: Steam-like list for one game (unlocked newest first, locked by
+  rarity, hidden ones summarised with "Show details"); reloads live.
 * First-run wizard: Welcome (unofficial-client disclaimer) → Library folder →
   7-Zip → Preferences (theme, shortcuts, close behaviour) → Account (optional)
   → Finish (`first_run_completed=True`).

@@ -66,9 +66,10 @@ from PyQt6.QtWidgets import (
 
 from anker_client import __version__
 from anker_client.constants import BASE_URL, GITHUB_REPO, ISSUES_URL, RELEASES_URL
+from anker_client.core import events as ev
 from anker_client.core import logging_setup
 from anker_client.core.formatting import format_bytes, format_relative_time, pluralize
-from anker_client.core.models import AppRelease, UserInfo
+from anker_client.core.models import Achievement, AppRelease, UserInfo
 from anker_client.core.paths import resource_path
 from anker_client.core.settings import CLOSE_ASK, CLOSE_QUIT, CLOSE_TRAY, Settings
 from anker_client.core.tasks import CancelToken, TaskHandle
@@ -117,6 +118,18 @@ SECTION_INFO: dict[str, tuple[str, str, str]] = {
     "about": ("About", "info", "Version, links and legal notices."),
 }
 
+ACHIEVEMENT_POSITION_CHOICES = (
+    ("bottom_right", "Bottom right"),
+    ("bottom_left", "Bottom left"),
+    ("top_right", "Top right"),
+    ("top_left", "Top left"),
+)
+PREVIEW_ACHIEVEMENTS = {
+    False: Achievement(api_name="ANKER_PREVIEW", name="Test Drive", description="Preview an achievement pop-up.",
+                       global_percent=48.2, unlocked=True),
+    True: Achievement(api_name="ANKER_PREVIEW_RARE", name="One in a Million", description="Preview a rare pop-up.",
+                      global_percent=2.4, unlocked=True),
+}
 CLOSE_CHOICES = (
     (CLOSE_ASK, "Ask me every time"),
     (CLOSE_TRAY, "Keep running in the tray"),
@@ -513,9 +526,33 @@ class SettingsPage(QWidget):
                                                            "attention, even when AnkerClient is in the tray.",
                                   self._toggle("notifications_enabled")))
 
+        achievements = section.add_group("Achievements")
+        achievements.add_row(SettingRow(
+            "Achievement pop-ups",
+            "Show a Steam-style pop-up when a game unlocks an achievement. Works with games that use the "
+            "Goldberg (gbe_fork), RUNE, CODEX or OnlineFix Steam emulators, while AnkerClient is running.",
+            self._toggle("achievement_popups")))
+        achievements.add_row(SettingRow("Play a sound", "Play the achievement sound with each pop-up.",
+                                        self._toggle("achievement_sound")))
+        self.achievement_position_combo = self._choice("achievement_position", ACHIEVEMENT_POSITION_CHOICES, str)
+        achievements.add_row(SettingRow("Pop-up position", "The corner of your main screen where pop-ups appear.",
+                                        self.achievement_position_combo))
+        self.preview_button = button("Preview", "trophy", size="sm", on_click=lambda: self._preview_achievement(False))
+        self.preview_rare_button = button("Preview rare", "sparkles", size="sm",
+                                          on_click=lambda: self._preview_achievement(True))
+        achievements.add_row(SettingRow("Try it", "Shows a sample pop-up with the settings above. Pop-ups appear "
+                                                  "over windowed and borderless games, not exclusive full screen.",
+                                         self.preview_button, self.preview_rare_button))
+
         updates = section.add_group("Updates")
         updates.add_row(SettingRow("Check for AnkerClient updates", "Look for a new version at startup and once "
                                                                     "a day.", self._toggle("check_app_updates")))
+
+    def _preview_achievement(self, rare: bool) -> None:
+        self._ctx.events.publish(ev.AchievementUnlocked(
+            app_id=0, achievement=PREVIEW_ACHIEVEMENTS[rare].copy(), game_title="AnkerClient",
+            unlocked_count=7, total=32, preview=True,
+        ))
 
     def _on_autostart_toggled(self, checked: bool) -> None:
         # A state check still in flight predates this change; its answer would undo it.

@@ -80,6 +80,18 @@ closes and AnkerClient takes over the transfer.
 - Several library folders. Import game folders you already have, or archives you
   downloaded yourself.
 
+### Achievements
+- Steam-style achievement pop-ups while you play: a card slides in at the corner
+  of your screen with the achievement's icon and name and a sound. Rare
+  achievements (fewer than 10% of players) get a gold card.
+- Works with games that ship the Goldberg (gbe_fork), RUNE, CODEX or OnlineFix
+  Steam emulators. Names, descriptions, icons and rarity come from Steam.
+- Each game's achievements in the Library: progress, recent unlocks, and a full
+  list with unlock dates and rarity. Hidden achievements stay hidden until you
+  unlock them, unless you choose to see them.
+- Turn pop-ups and the sound on or off, pick a screen corner, and preview them
+  in **Settings → General → Achievements**.
+
 ### Updates
 - Checks installed games for new versions (every 6 hours by default) and uses
   the small update-only patch when the site has one.
@@ -145,6 +157,13 @@ Open the game's **Properties** in the Library and pick the right executable.
 AnkerClient asks on its own when it can't tell which file is the game. If the
 game needs Visual C++ or DirectX, select it in the Library and click
 **Install prerequisites**.
+
+### Achievement pop-ups don't appear.
+- AnkerClient has to be running (it can sit in the tray) while you play.
+- Pop-ups show over windowed and borderless games. In exclusive full screen
+  they can't be drawn on top of the game; switch the game to borderless.
+- The game must use one of the supported Steam emulators. Its achievements show
+  in the Library when AnkerClient can read them.
 
 ### A download says "Waiting".
 The site limits how often you can start downloads. AnkerClient waits out the
